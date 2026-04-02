@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Изготовление и монтаж заборов, навесов, ворот в Москве и МО">
+    <title data-db="site_title">Арт Периметр — Металлоконструкции</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="tel:+79175097997" class="sticky-btn" aria-label="Позвонить">📞</a>
+
+    <header id="header"></header>
+
+    <div id="mobile-menu" class="mobile-menu hidden">
+        <button class="mobile-menu-close" onclick="App.closeMobileMenu()">✕</button>
+        <nav id="mobile-nav"></nav>
+    </div>
+
+    <main id="app-container"></main>
+
+    <footer id="footer"></footer>
+
+    <div id="toast" class="toast hidden">
+        <svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span id="toast-message"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
