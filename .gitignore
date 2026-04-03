@@ -1,3 +1,5 @@
-node_modules/
-npm-debug.log*
-.DS_Store
+```
+# Logs and temp files
+*.log
+server.log
+```
