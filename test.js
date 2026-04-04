@@ -560,3 +560,76 @@ test('POST /api/save — просроченный токен 403', async () => {
   const res = await request('POST', '/api/save', { token: expired, newContent: {} });
   assert.strictEqual(res.status, 403);
 });
+
+// ==================== PHASE 4: FRONTEND INTEGRATION TESTS ====================
+
+test('GET /api/jsonld — возвращает JSON-LD структурированные данные', async () => {
+  const res = await request('GET', '/api/jsonld');
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body['@context'], 'https://schema.org');
+  assert.strictEqual(res.body['@type'], 'LocalBusiness');
+  assert.ok(res.body.name);
+  assert.ok(res.body.telephone);
+  assert.ok(res.body.address);
+  assert.ok(res.body.openingHoursSpecification);
+});
+
+test('GET /api/jsonld — содержит все обязательные поля LocalBusiness', async () => {
+  const res = await request('GET', '/api/jsonld');
+  assert.strictEqual(res.status, 200);
+  const required = ['@context', '@type', 'name', 'description', 'telephone', 'email', 'address', 'openingHoursSpecification', 'image', 'priceRange'];
+  required.forEach(field => {
+    assert.ok(res.body[field] !== undefined, `Missing JSON-LD field: ${field}`);
+  });
+});
+
+test('GET /api/assets/audit — возвращает список изображений', async () => {
+  const res = await request('GET', '/api/assets/audit');
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.total > 0);
+  assert.ok(Array.isArray(res.body.images));
+});
+
+test('GET /api/assets/audit — все изображения имеют валидные URL', async () => {
+  const res = await request('GET', '/api/assets/audit');
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.invalid, 0);
+  res.body.images.forEach(img => {
+    assert.strictEqual(img.valid, true, `Invalid URL: ${img.url}`);
+  });
+});
+
+test('GET /api/data — portfolio массив доступен для динамической галереи', async () => {
+  const res = await request('GET', '/api/data');
+  assert.strictEqual(res.status, 200);
+  assert.ok(Array.isArray(res.body.portfolio));
+  assert.ok(res.body.portfolio.length > 0);
+  res.body.portfolio.forEach(item => {
+    assert.ok(item.title);
+    assert.ok(item.img);
+    assert.ok(item.tag);
+  });
+});
+
+test('GET /api/data — calc_fences содержит height options', async () => {
+  const res = await request('GET', '/api/data');
+  assert.strictEqual(res.status, 200);
+  res.body.calc_fences.forEach(fence => {
+    assert.ok(Array.isArray(fence.heights), `Fence ${fence.id} missing heights`);
+  });
+});
+
+test('GET /api/data — calc_paint_options доступен', async () => {
+  const res = await request('GET', '/api/data');
+  assert.strictEqual(res.status, 200);
+  assert.ok(Array.isArray(res.body.calc_paint_options));
+  assert.ok(res.body.calc_paint_options.length > 0);
+});
+
+test('GET /api/data — delivery fee и discount config доступны', async () => {
+  const res = await request('GET', '/api/data');
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.calc_delivery_fee, 5000);
+  assert.strictEqual(res.body.calc_discount_threshold, 100);
+  assert.strictEqual(res.body.calc_discount_percent, 5);
+});

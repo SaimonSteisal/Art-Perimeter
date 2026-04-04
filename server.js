@@ -217,6 +217,59 @@ app.get('/api/data', (req, res) => {
   }
 });
 
+app.get('/api/jsonld', (req, res) => {
+  try {
+    const db = readDb();
+    const c = db.content;
+    const jsonld = {
+      '@context': 'https://schema.org',
+      '@type': 'LocalBusiness',
+      name: c.company_name,
+      description: c.hero_description,
+      url: 'https://art-perimeter.ru',
+      telephone: c.phone_main,
+      email: c.email,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Москва',
+        addressCountry: 'RU',
+        streetAddress: c.address
+      },
+      openingHoursSpecification: {
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+        opens: '09:00',
+        closes: '21:00'
+      },
+      image: c.hero_bg,
+      priceRange: '$$'
+    };
+    res.json(jsonld);
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось сгенерировать JSON-LD' });
+  }
+});
+
+app.get('/api/assets/audit', (req, res) => {
+  try {
+    const db = readDb();
+    const urls = [];
+    function extractImages(obj) {
+      if (!obj || typeof obj !== 'object') return;
+      if (Array.isArray(obj)) { obj.forEach(extractImages); return; }
+      for (const [key, value] of Object.entries(obj)) {
+        if (key === 'img' && typeof value === 'string') urls.push({ field: key, url: value, valid: value.startsWith('http') });
+        else if (key === 'hero_bg' && typeof value === 'string') urls.push({ field: key, url: value, valid: value.startsWith('http') });
+        else if (typeof value === 'object') extractImages(value);
+      }
+    }
+    extractImages(db.content);
+    res.json({ total: urls.length, valid: urls.filter(u => u.valid).length, invalid: urls.filter(u => !u.valid).length, images: urls });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка аудита ассетов' });
+  }
+});
+
 app.get('/api/leads', (req, res) => {
   try {
     const db = readDb();

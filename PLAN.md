@@ -24,14 +24,14 @@
  * [x] **3.4. Input Sanitization:** Add a helper to strip HTML tags from all incoming POST data (protection against XSS).
  * [x] **3.5. Security Tests:** Add tests for unauthorized access attempts in test.js.
  * [x] **3.6. Verification:** Run node test.js.
- * [ ] **3.7. Git:** Commit "Security: Admin API and Sanitization".
+ * [x] **3.7. Git:** Commit "Security: Admin API and Sanitization".
 
 ## Phase 4: Frontend Integration & Optimization (The "Face")
- * [ ] **4.1. Asset Audit:** Check all image paths in db.json and ensure they exist in the project folder.
- * [ ] **4.2. JSON-LD Implementation:** Add a function to generate SEO structured data (Organization, LocalBusiness) into the HTML output.
- * [ ] **4.3. Dynamic Gallery:** Refactor the portfolio section to load items directly from api/data instead of hardcoded HTML.
- * [ ] **4.4. Mobile Form:** Ensure the "Lead Form" has inputmode and type attributes optimized for mobile (tel, text).
- * [ ] **4.5. Verification:** Run node test.js (Check if API still serves correct data for frontend).
+ * [x] **4.1. Asset Audit:** Check all image paths in db.json and ensure they exist in the project folder.
+ * [x] **4.2. JSON-LD Implementation:** Add a function to generate SEO structured data (Organization, LocalBusiness) into the HTML output.
+ * [x] **4.3. Dynamic Gallery:** Refactor the portfolio section to load items directly from api/data instead of hardcoded HTML.
+ * [x] **4.4. Mobile Form:** Ensure the "Lead Form" has inputmode and type attributes optimized for mobile (tel, text).
+ * [x] **4.5. Verification:** Run node test.js (Check if API still serves correct data for frontend).
  * [ ] **4.6. Git:** Commit "UX: Dynamic content and SEO".
 
 ## Phase 5: Final Polish & Stress Test
