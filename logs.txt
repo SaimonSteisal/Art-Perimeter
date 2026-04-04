@@ -1,1 +1,11 @@
-[2026-04-04T05:34:56.488Z] LEAD: LogTest (+7 000 111 22 33) type=log-test
+[2026-04-04T06:07:35.415Z] LEAD: LogTest (+7 000 111 22 33) type=log-test status=new
+[2026-04-04T06:07:35.420Z] LEAD: StatusTest (+7 111 222 33 44) type=status-test status=new
+[2026-04-04T06:07:35.425Z] LEAD: PatchTest (+7 222 333 44 55) type=patch-test status=new
+[2026-04-04T06:07:35.430Z] LEAD STATUS: 1775282855422 -> in_progress
+[2026-04-04T06:07:35.445Z] CONTENT UPDATE: company_name
+[2026-04-04T06:07:35.454Z] CONTENT UPDATE: company_name
+[2026-04-04T06:07:35.459Z] CONTENT ROLLBACK to version 0
+[2026-04-04T06:07:35.466Z] LEAD: Spam0 (+7 000 000 00 00) type=ratelimit status=new
+[2026-04-04T06:07:35.471Z] LEAD: Spam1 (+7 000 000 00 01) type=ratelimit status=new
+[2026-04-04T06:07:35.476Z] LEAD: Spam2 (+7 000 000 00 02) type=ratelimit status=new
+[2026-04-04T06:07:35.481Z] LEAD: Spam3 (+7 000 000 00 03) type=ratelimit status=new

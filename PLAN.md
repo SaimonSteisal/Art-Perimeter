@@ -32,11 +32,44 @@
  * [x] **4.3. Dynamic Gallery:** Refactor the portfolio section to load items directly from api/data instead of hardcoded HTML.
  * [x] **4.4. Mobile Form:** Ensure the "Lead Form" has inputmode and type attributes optimized for mobile (tel, text).
  * [x] **4.5. Verification:** Run node test.js (Check if API still serves correct data for frontend).
- * [ ] **4.6. Git:** Commit "UX: Dynamic content and SEO".
+ * [x] **4.6. Git:** Commit "UX: Dynamic content and SEO".
 
 ## Phase 5: Final Polish & Stress Test
  * [x] **5.1. Log System:** Create a logs.txt file where the server records every lead and every error.
  * [x] **5.2. Error Pages:** Add a catch-all middleware in Express for 404 and 500 errors.
  * [x] **5.3. Performance Check:** Measure API response time in test.js (must be < 50ms).
  * [x] **5.4. Final Report:** Generate a summary of the whole project state.
- * [ ] **5.5. Git:** Final Commit "Release: v1.0 Production Ready".
+ * [x] **5.5. Git:** Final Commit "Release: v1.0 Production Ready".
+
+## Phase 6: Advanced Features & Business Logic
+ * [x] **6.1. Lead Status Tracking:** Add status field (new, in_progress, completed, rejected) to leads with PATCH /api/leads/:id/status endpoint.
+ * [x] **6.2. Lead Export:** Create GET /api/leads/export?format=csv endpoint to download leads as CSV.
+ * [x] **6.3. Rate Limiting:** Implement simple IP-based rate limiting on POST /api/leads to prevent spam (max 5 per minute per IP).
+ * [x] **6.4. Content Versioning:** Add version history to content changes (who changed what, when) via POST /api/save with diff tracking.
+ * [x] **6.5. Test Expansion:** Add tests for lead status, CSV export, rate limiting, and content versioning.
+ * [x] **6.6. Verification:** Run node test.js.
+ * [ ] **6.7. Git:** Commit "Features: Lead management, export, rate limiting".
+
+## Phase 7: Admin Dashboard Enhancement
+ * [ ] **7.1. Admin Stats:** Create GET /api/stats endpoint returning leads count by status, total revenue from calculator, avg response time.
+ * [ ] **7.2. Bulk Lead Operations:** Add POST /api/leads/bulk-delete and POST /api/leads/bulk-status endpoints.
+ * [ ] **7.3. Content Preview:** Create GET /api/preview endpoint that returns rendered HTML preview of content changes without saving.
+ * [ ] **7.4. File Upload Support:** Add POST /api/upload endpoint for uploading images (stored in /uploads) with size validation.
+ * [ ] **7.5. Test Expansion:** Add tests for stats, bulk operations, preview, and file upload.
+ * [ ] **7.6. Verification:** Run node test.js.
+ * [ ] **7.7. Git:** Commit "Admin: Stats, bulk ops, file uploads".
+
+## Phase 8: Production Hardening
+ * [ ] **8.1. Environment Config:** Move ADMIN_PASSWORD, TOKEN_SECRET, PORT to .env file with dotenv-like native parsing.
+ * [ ] **8.2. Graceful Shutdown:** Handle SIGTERM/SIGINT to close server connections and flush logs before exit.
+ * [ ] **8.3. Health Check:** Create GET /api/health endpoint returning uptime, memory usage, db status, and log file size.
+ * [ ] **8.4. Log Rotation:** Implement log rotation — when logs.txt exceeds 1MB, archive to logs_YYYY-MM-DD.txt and start fresh.
+ * [ ] **8.5. Test Expansion:** Add tests for health check, graceful shutdown simulation, and log rotation.
+ * [ ] **8.6. Verification:** Run node test.js.
+ * [ ] **8.7. Git:** Commit "Production: Health check, graceful shutdown, log rotation".
+
+## Phase 9: Final Release v2.0
+ * [ ] **9.1. Comprehensive Test Suite:** Ensure 100+ tests pass with 0 failures.
+ * [ ] **9.2. Code Cleanup:** Remove unused code, add JSDoc comments to all exported functions.
+ * [ ] **9.3. Final Verification:** Run node test.js — all pass.
+ * [ ] **9.4. Git:** Final Commit "Release: v2.0 Full Production".

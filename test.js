@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, defaultDb, ADMIN_PASSWORD, DB_FILE } = require('./server');
+const { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, DB_FILE } = require('./server');
 
 const TEST_PORT = 3999;
 let server;
@@ -683,4 +683,107 @@ test('logs.txt — создаётся при записи заявки', async (
   const content = fs.readFileSync(logPath, 'utf8');
   assert.ok(content.includes('LEAD:'));
   assert.ok(content.includes('LogTest'));
+});
+
+// ==================== PHASE 6: ADVANCED FEATURES ====================
+
+test('POST /api/leads — новая заявка имеет статус new', async () => {
+  resetRateLimits();
+  const lead = { type: 'status-test', name: 'StatusTest', phone: '+7 111 222 33 44' };
+  const res = await request('POST', '/api/leads', lead);
+  assert.strictEqual(res.status, 200);
+  const db = readDb();
+  const created = db.leads.find(l => l.id === res.body.id);
+  assert.strictEqual(created.status, 'new');
+});
+
+test('PATCH /api/leads/:id/status — обновление статуса', async () => {
+  resetRateLimits();
+  const lead = { type: 'patch-test', name: 'PatchTest', phone: '+7 222 333 44 55' };
+  const createRes = await request('POST', '/api/leads', lead);
+  assert.strictEqual(createRes.status, 200);
+  const token = await getValidToken();
+  const res = await request('PATCH', `/api/leads/${createRes.body.id}/status?token=${encodeURIComponent(token)}`, { status: 'in_progress' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.lead.status, 'in_progress');
+});
+
+test('PATCH /api/leads/:id/status — недопустимый статус 400', async () => {
+  const token = await getValidToken();
+  const res = await request('PATCH', `/api/leads/fake-id/status?token=${encodeURIComponent(token)}`, { status: 'invalid_status' });
+  assert.strictEqual(res.status, 400);
+});
+
+test('PATCH /api/leads/:id/status — без токена 403', async () => {
+  const res = await request('PATCH', '/api/leads/fake-id/status', { status: 'completed' });
+  assert.strictEqual(res.status, 403);
+});
+
+test('PATCH /api/leads/:id/status — несуществующий ID 404', async () => {
+  const token = await getValidToken();
+  const res = await request('PATCH', `/api/leads/nonexistent-id/status?token=${encodeURIComponent(token)}`, { status: 'completed' });
+  assert.strictEqual(res.status, 404);
+});
+
+test('GET /api/leads/export — CSV экспорт с токеном', async () => {
+  const token = await getValidToken();
+  const res = await request('GET', `/api/leads/export?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 200);
+  assert.ok(typeof res.body === 'string');
+  assert.ok(res.body.includes('ID,Date,Name,Phone'));
+});
+
+test('GET /api/leads/export — без токена 403', async () => {
+  const res = await request('GET', '/api/leads/export');
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/save — сохраняет историю изменений', async () => {
+  const token = await getValidToken();
+  await request('POST', '/api/save', { token, newContent: { company_name: 'History Test Co' } });
+  const db = readDb();
+  assert.ok(Array.isArray(db.contentHistory));
+  assert.ok(db.contentHistory.length > 0);
+  assert.ok(db.contentHistory[0].changes.includes('company_name'));
+});
+
+test('GET /api/content/history — возвращает историю', async () => {
+  const token = await getValidToken();
+  const res = await request('GET', `/api/content/history?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 200);
+  assert.ok(Array.isArray(res.body.history));
+  assert.ok(res.body.history.length > 0);
+  assert.ok(res.body.history[0].changes);
+  assert.ok(res.body.history[0].date);
+});
+
+test('GET /api/content/history — без токена 403', async () => {
+  const res = await request('GET', '/api/content/history');
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/content/rollback — откат к предыдущей версии', async () => {
+  const token = await getValidToken();
+  await request('POST', '/api/save', { token, newContent: { company_name: 'Rollback Target' } });
+  const db = readDb();
+  const versionIndex = 0;
+  const res = await request('POST', '/api/content/rollback', { token, versionIndex });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+});
+
+test('POST /api/content/rollback — несуществующая версия 404', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', '/api/content/rollback', { token, versionIndex: 9999 });
+  assert.strictEqual(res.status, 404);
+});
+
+test('Rate limiting — блокирует после 5 запросов за минуту', async () => {
+  for (let i = 0; i < 5; i++) {
+    await request('POST', '/api/leads', { type: 'ratelimit', name: `Spam${i}`, phone: `+7 000 000 00 0${i}` });
+  }
+  const res = await request('POST', '/api/leads', { type: 'ratelimit', name: 'Blocked', phone: '+7 000 000 00 99' });
+  assert.strictEqual(res.status, 429);
+  assert.ok(res.body.error);
 });

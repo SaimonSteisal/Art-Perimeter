@@ -288,21 +288,88 @@ app.get('/api/leads', (req, res) => {
 
 app.post('/api/leads', (req, res) => {
   try {
+    const ip = req.ip || req.connection.remoteAddress;
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: 'Слишком много запросов. Подождите минуту.' });
+    }
     const db = readDb();
     const sanitized = sanitizeObject(req.body);
     const newLead = {
       id: Date.now().toString(),
       timestamp: Date.now(),
       date: new Date().toLocaleString('ru-RU'),
+      status: 'new',
       ...sanitized
     };
     db.leads.unshift(newLead);
     writeDb(db);
     console.log(`📩 Новая заявка: ${newLead.name} (${newLead.phone})`);
-    logToFile(`LEAD: ${newLead.name} (${newLead.phone}) type=${newLead.type || 'unknown'}`);
+    logToFile(`LEAD: ${newLead.name} (${newLead.phone}) type=${newLead.type || 'unknown'} status=new`);
     res.json({ success: true, id: newLead.id });
   } catch (err) {
+    logToFile(`ERROR creating lead: ${err.message}`);
     res.status(500).json({ error: 'Не удалось сохранить заявку' });
+  }
+});
+
+const rateLimitMap = new Map();
+function isRateLimited(ip) {
+  const now = Date.now();
+  const window = 60 * 1000;
+  const maxRequests = 5;
+  if (!rateLimitMap.has(ip)) rateLimitMap.set(ip, []);
+  const timestamps = rateLimitMap.get(ip).filter(t => now - t < window);
+  timestamps.push(now);
+  rateLimitMap.set(ip, timestamps);
+  return timestamps.length > maxRequests;
+}
+function resetRateLimits() {
+  rateLimitMap.clear();
+}
+
+app.patch('/api/leads/:id/status', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  const { status } = req.body;
+  const validStatuses = ['new', 'in_progress', 'completed', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Недопустимый статус. Допустимые: ${validStatuses.join(', ')}` });
+  }
+  try {
+    const db = readDb();
+    const lead = db.leads.find(l => l.id === req.params.id);
+    if (!lead) return res.status(404).json({ error: 'Заявка не найдена' });
+    lead.status = status;
+    lead.statusUpdatedAt = new Date().toLocaleString('ru-RU');
+    writeDb(db);
+    logToFile(`LEAD STATUS: ${lead.id} -> ${status}`);
+    res.json({ success: true, lead });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось обновить статус' });
+  }
+});
+
+app.get('/api/leads/export', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const leads = db.leads || [];
+    const headers = ['ID', 'Date', 'Name', 'Phone', 'Type', 'Status', 'Details'];
+    const rows = leads.map(l => {
+      const details = l.details ? JSON.stringify(l.details).replace(/"/g, '""') : '';
+      return `"${l.id}","${l.date}","${l.name || ''}","${l.phone || ''}","${l.type || ''}","${l.status || 'new'}","${details}"`;
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=leads.csv');
+    res.send('\uFEFF' + csv);
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка экспорта' });
   }
 });
 
@@ -368,12 +435,61 @@ app.post('/api/save', (req, res) => {
 
   try {
     const db = readDb();
+    const oldContent = JSON.parse(JSON.stringify(db.content));
     db.content = { ...db.content, ...sanitizeObject(newContent) };
+    if (!db.contentHistory) db.contentHistory = [];
+    db.contentHistory.unshift({
+      timestamp: Date.now(),
+      date: new Date().toLocaleString('ru-RU'),
+      changes: Object.keys(newContent),
+      snapshot: oldContent
+    });
+    if (db.contentHistory.length > 20) db.contentHistory = db.contentHistory.slice(0, 20);
     writeDb(db);
     console.log('✅ Контент обновлён');
+    logToFile(`CONTENT UPDATE: ${Object.keys(newContent).join(', ')}`);
     res.json({ success: true });
   } catch (err) {
+    logToFile(`ERROR saving content: ${err.message}`);
     res.status(500).json({ error: 'Не удалось сохранить изменения' });
+  }
+});
+
+app.get('/api/content/history', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const history = (db.contentHistory || []).map(h => ({
+      date: h.date,
+      changes: h.changes,
+      timestamp: h.timestamp
+    }));
+    res.json({ history });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось получить историю' });
+  }
+});
+
+app.post('/api/content/rollback', (req, res) => {
+  const { token, versionIndex } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const history = db.contentHistory || [];
+    if (!history[versionIndex]) {
+      return res.status(404).json({ error: 'Версия не найдена' });
+    }
+    db.content = history[versionIndex].snapshot;
+    writeDb(db);
+    logToFile(`CONTENT ROLLBACK to version ${versionIndex}`);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка отката' });
   }
 });
 
@@ -448,4 +564,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE };
+module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE };
