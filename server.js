@@ -534,29 +534,11 @@ app.post('/api/calculate', (req, res) => {
   }
 });
 
-// ==================== ROUTING FIX ====================
-// GET / : Serve Landing Page (public/index.html)
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// GET /admin : Serve Admin Dashboard (login protected via client-side)
-app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-// GET /admin/plan : Serve Development Plan Viewer
-app.get('/admin/plan', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin-plan.html'));
-});
-
-// 404 handler for unknown routes
 app.use((req, res) => {
   logToFile(`404: ${req.method} ${req.url}`);
-  res.status(404).sendFile(path.join(__dirname, 'public', '404.html')) || res.status(404).json({ error: 'Страница не найдена' });
+  res.status(404).json({ error: 'Страница не найдена' });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   logToFile(`500 ERROR: ${err.message}`);
   res.status(500).json({ error: 'Внутренняя ошибка сервера' });
@@ -570,8 +552,7 @@ function startServer() {
 ║  🚀 Сервер запущен!                        ║
 ║                                            ║
 ║  🌐 Сайт:     http://localhost:${PORT}       ║
-║  🔧 Админка:  http://localhost:${PORT}/admin ║
-║  📋 План:     http://localhost:${PORT}/admin/plan ║
+║  🔧 Админка:  http://localhost:${PORT}/admin.html ║
 ║  🔑 Пароль:   ${ADMIN_PASSWORD}                 ║
 ║  💾 База:     db.json                       ║
 ╚════════════════════════════════════════════╝
