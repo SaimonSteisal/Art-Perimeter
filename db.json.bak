@@ -1,0 +1,851 @@
+{
+  "content": {
+    "site_title": "Арт Периметр — Металлоконструкции",
+    "company_name": "History Test Co",
+    "phone_main": "+7 917 509 79 97",
+    "phone_secondary": "+7 985 554 16 69",
+    "email": "artemtozlan5@gmail.com",
+    "address": "Москва и МО, Производственный проезд, 1",
+    "hours": "Ежедневно 9:00 - 21:00",
+    "hero_subtitle": "ваша зона комфорта",
+    "hero_title": "evilТест",
+    "hero_description": "Работаем по Москве и МО. Своё производство. Гарантия 2 года.",
+    "hero_cta_text": "Рассчитать стоимость",
+    "hero_cta_link": "#calculator",
+    "hero_bg": "https://images.pexels.com/photos/162568/fence-iron-gate-garden-162568.jpeg?auto=compress&cs=tinysrgb&w=1920",
+    "advantages": [
+      {
+        "icon": "🛡️",
+        "title": "Работа по договору",
+        "desc": "Фиксируем стоимость и сроки. Никаких скрытых платежей."
+      },
+      {
+        "icon": "🏭",
+        "title": "Собственный цех",
+        "desc": "Изготавливаем конструкции сами, без посредников."
+      },
+      {
+        "icon": "⏱️",
+        "title": "Точно в срок",
+        "desc": "Бригады с опытом от 7 лет. Монтаж за 1-2 дня."
+      },
+      {
+        "icon": "✅",
+        "title": "Гарантия 2 года",
+        "desc": "Мы уверены в качестве, поэтому даём честную гарантию."
+      }
+    ],
+    "calc_title": "Быстрый расчет стоимости забора",
+    "calc_subtitle": "Ответьте на 3 вопроса и узнайте ориентировочную цену",
+    "calc_fences": [
+      {
+        "id": "f1",
+        "name": "Профнастил",
+        "price": 3000,
+        "img": "https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600",
+        "heights": [
+          1.5,
+          1.8,
+          2,
+          2.5
+        ]
+      },
+      {
+        "id": "f2",
+        "name": "Евроштакетник",
+        "price": 4500,
+        "img": "https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600",
+        "heights": [
+          1.5,
+          1.8,
+          2,
+          2.5
+        ]
+      },
+      {
+        "id": "f3",
+        "name": "3D Сетка",
+        "price": 2000,
+        "img": "https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600",
+        "heights": [
+          1.5,
+          1.8,
+          2,
+          2.5
+        ]
+      }
+    ],
+    "calc_extras": [
+      {
+        "id": "gate",
+        "name": "Ворота (Откатные)",
+        "price": 35000,
+        "img": "https://images.pexels.com/photos/2251247/pexels-photo-2251247.jpeg?auto=compress&cs=tinysrgb&w=600"
+      },
+      {
+        "id": "wicket",
+        "name": "Калитка",
+        "price": 15000,
+        "img": "https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=600"
+      }
+    ],
+    "calc_heights": [
+      {
+        "value": 1.5,
+        "label": "1.5 м",
+        "multiplier": 1
+      },
+      {
+        "value": 1.8,
+        "label": "1.8 м",
+        "multiplier": 1.15
+      },
+      {
+        "value": 2,
+        "label": "2.0 м",
+        "multiplier": 1.25
+      },
+      {
+        "value": 2.5,
+        "label": "2.5 м",
+        "multiplier": 1.5
+      }
+    ],
+    "calc_paint_options": [
+      {
+        "id": "none",
+        "name": "Без покраски",
+        "multiplier": 1
+      },
+      {
+        "id": "ground",
+        "name": "Грунт-эмаль",
+        "multiplier": 1.1
+      },
+      {
+        "id": "powder",
+        "name": "Порошковая покраска",
+        "multiplier": 1.2
+      }
+    ],
+    "calc_delivery_fee": 5000,
+    "calc_discount_threshold": 100,
+    "calc_discount_percent": 5,
+    "services_title": "Наши услуги",
+    "services_desc": "Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.",
+    "services": [
+      {
+        "title": "Заборы и ограждения",
+        "desc": "Профнастил, евроштакетник, 3D сетка, жалюзи.",
+        "img": "https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=600"
+      },
+      {
+        "title": "Калитки",
+        "desc": "Металлические, с элементами ковки, врезные замки.",
+        "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+      },
+      {
+        "title": "Откатные ворота",
+        "desc": "Автоматика, консольные системы, монтаж под ключ.",
+        "img": "https://images.pexels.com/photos/210617/pexels-photo-210617.jpeg?auto=compress&cs=tinysrgb&w=600"
+      },
+      {
+        "title": "Навесы для авто",
+        "desc": "Арочные и односкатные навесы из поликарбоната.",
+        "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+      }
+    ],
+    "portfolio_title": "Выполненные объекты",
+    "portfolio_subtitle": "Реальные примеры наших работ в Москве и области",
+    "portfolio": [
+      {
+        "title": "Навес на 2 машины",
+        "tag": "МО, Одинцово",
+        "img": "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        "title": "Забор жалюзи",
+        "tag": "Истра",
+        "img": "https://images.unsplash.com/photo-1622379361879-668d2a650992?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        "title": "Кованые перила",
+        "tag": "Химки",
+        "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
+      },
+      {
+        "id": "1775289399639",
+        "title": "Тестовый объект",
+        "tag": "Москва",
+        "img": "https://example.com/test.jpg"
+      }
+    ],
+    "contacts_title": "Свяжитесь с нами",
+    "contacts_subtitle": "Контактная информация",
+    "contacts_desc": "Готовы обсудить ваш проект? Позвоните нам или напишите на почту.",
+    "contacts_form_title": "Оставьте заявку",
+    "contacts_form_consent": "Я согласен на обработку персональных данных",
+    "contacts_form_submit": "Отправить",
+    "footer_text": "© 2025 Арт Периметр. Все права защищены.",
+    "footer_privacy": "#"
+  },
+  "leads": [
+    {
+      "id": "1775289400035",
+      "timestamp": 1775289400035,
+      "date": "04.04.2026, 07:56:40",
+      "status": "new",
+      "type": "ratelimit",
+      "name": "Spam2",
+      "phone": "+7 000 000 00 02"
+    },
+    {
+      "id": "1775289400019",
+      "timestamp": 1775289400019,
+      "date": "04.04.2026, 07:56:40",
+      "status": "new",
+      "type": "ratelimit",
+      "name": "Spam1",
+      "phone": "+7 000 000 00 01"
+    },
+    {
+      "id": "1775289400017",
+      "timestamp": 1775289400017,
+      "date": "04.04.2026, 07:56:40",
+      "status": "new",
+      "type": "ratelimit",
+      "name": "Spam0",
+      "phone": "+7 000 000 00 00"
+    },
+    {
+      "id": "1775289399823",
+      "timestamp": 1775289399823,
+      "date": "04.04.2026, 07:56:39",
+      "status": "in_progress",
+      "type": "patch-test",
+      "name": "PatchTest",
+      "phone": "+7 222 333 44 55",
+      "statusUpdatedAt": "04.04.2026, 07:56:39"
+    },
+    {
+      "id": "1775289399820",
+      "timestamp": 1775289399820,
+      "date": "04.04.2026, 07:56:39",
+      "status": "new",
+      "type": "status-test",
+      "name": "StatusTest",
+      "phone": "+7 111 222 33 44"
+    },
+    {
+      "id": "1775289399817",
+      "timestamp": 1775289399817,
+      "date": "04.04.2026, 07:56:39",
+      "status": "new",
+      "type": "log-test",
+      "name": "LogTest",
+      "phone": "+7 000 111 22 33"
+    },
+    {
+      "id": "1775289399659",
+      "timestamp": 1775289399659,
+      "date": "04.04.2026, 07:56:39",
+      "status": "new",
+      "type": "calc",
+      "name": "hack",
+      "phone": "+7 999 000 00 00"
+    }
+  ],
+  "contentHistory": [
+    {
+      "timestamp": 1775289399983,
+      "date": "04.04.2026, 07:56:39",
+      "changes": [
+        "company_name"
+      ],
+      "snapshot": {
+        "site_title": "Арт Периметр — Металлоконструкции",
+        "company_name": "History Test Co",
+        "phone_main": "+7 917 509 79 97",
+        "phone_secondary": "+7 985 554 16 69",
+        "email": "artemtozlan5@gmail.com",
+        "address": "Москва и МО, Производственный проезд, 1",
+        "hours": "Ежедневно 9:00 - 21:00",
+        "hero_subtitle": "ваша зона комфорта",
+        "hero_title": "evilТест",
+        "hero_description": "Работаем по Москве и МО. Своё производство. Гарантия 2 года.",
+        "hero_cta_text": "Рассчитать стоимость",
+        "hero_cta_link": "#calculator",
+        "hero_bg": "https://images.pexels.com/photos/162568/fence-iron-gate-garden-162568.jpeg?auto=compress&cs=tinysrgb&w=1920",
+        "advantages": [
+          {
+            "icon": "🛡️",
+            "title": "Работа по договору",
+            "desc": "Фиксируем стоимость и сроки. Никаких скрытых платежей."
+          },
+          {
+            "icon": "🏭",
+            "title": "Собственный цех",
+            "desc": "Изготавливаем конструкции сами, без посредников."
+          },
+          {
+            "icon": "⏱️",
+            "title": "Точно в срок",
+            "desc": "Бригады с опытом от 7 лет. Монтаж за 1-2 дня."
+          },
+          {
+            "icon": "✅",
+            "title": "Гарантия 2 года",
+            "desc": "Мы уверены в качестве, поэтому даём честную гарантию."
+          }
+        ],
+        "calc_title": "Быстрый расчет стоимости забора",
+        "calc_subtitle": "Ответьте на 3 вопроса и узнайте ориентировочную цену",
+        "calc_fences": [
+          {
+            "id": "f1",
+            "name": "Профнастил",
+            "price": 3000,
+            "img": "https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          },
+          {
+            "id": "f2",
+            "name": "Евроштакетник",
+            "price": 4500,
+            "img": "https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          },
+          {
+            "id": "f3",
+            "name": "3D Сетка",
+            "price": 2000,
+            "img": "https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          }
+        ],
+        "calc_extras": [
+          {
+            "id": "gate",
+            "name": "Ворота (Откатные)",
+            "price": 35000,
+            "img": "https://images.pexels.com/photos/2251247/pexels-photo-2251247.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "id": "wicket",
+            "name": "Калитка",
+            "price": 15000,
+            "img": "https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=600"
+          }
+        ],
+        "calc_heights": [
+          {
+            "value": 1.5,
+            "label": "1.5 м",
+            "multiplier": 1
+          },
+          {
+            "value": 1.8,
+            "label": "1.8 м",
+            "multiplier": 1.15
+          },
+          {
+            "value": 2,
+            "label": "2.0 м",
+            "multiplier": 1.25
+          },
+          {
+            "value": 2.5,
+            "label": "2.5 м",
+            "multiplier": 1.5
+          }
+        ],
+        "calc_paint_options": [
+          {
+            "id": "none",
+            "name": "Без покраски",
+            "multiplier": 1
+          },
+          {
+            "id": "ground",
+            "name": "Грунт-эмаль",
+            "multiplier": 1.1
+          },
+          {
+            "id": "powder",
+            "name": "Порошковая покраска",
+            "multiplier": 1.2
+          }
+        ],
+        "calc_delivery_fee": 5000,
+        "calc_discount_threshold": 100,
+        "calc_discount_percent": 5,
+        "services_title": "Наши услуги",
+        "services_desc": "Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.",
+        "services": [
+          {
+            "title": "Заборы и ограждения",
+            "desc": "Профнастил, евроштакетник, 3D сетка, жалюзи.",
+            "img": "https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Калитки",
+            "desc": "Металлические, с элементами ковки, врезные замки.",
+            "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Откатные ворота",
+            "desc": "Автоматика, консольные системы, монтаж под ключ.",
+            "img": "https://images.pexels.com/photos/210617/pexels-photo-210617.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Навесы для авто",
+            "desc": "Арочные и односкатные навесы из поликарбоната.",
+            "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+          }
+        ],
+        "portfolio_title": "Выполненные объекты",
+        "portfolio_subtitle": "Реальные примеры наших работ в Москве и области",
+        "portfolio": [
+          {
+            "title": "Навес на 2 машины",
+            "tag": "МО, Одинцово",
+            "img": "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "title": "Забор жалюзи",
+            "tag": "Истра",
+            "img": "https://images.unsplash.com/photo-1622379361879-668d2a650992?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "title": "Кованые перила",
+            "tag": "Химки",
+            "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "id": "1775289399639",
+            "title": "Тестовый объект",
+            "tag": "Москва",
+            "img": "https://example.com/test.jpg"
+          }
+        ],
+        "contacts_title": "Свяжитесь с нами",
+        "contacts_subtitle": "Контактная информация",
+        "contacts_desc": "Готовы обсудить ваш проект? Позвоните нам или напишите на почту.",
+        "contacts_form_title": "Оставьте заявку",
+        "contacts_form_consent": "Я согласен на обработку персональных данных",
+        "contacts_form_submit": "Отправить",
+        "footer_text": "© 2025 Арт Периметр. Все права защищены.",
+        "footer_privacy": "#"
+      }
+    },
+    {
+      "timestamp": 1775289399959,
+      "date": "04.04.2026, 07:56:39",
+      "changes": [
+        "company_name"
+      ],
+      "snapshot": {
+        "site_title": "Арт Периметр — Металлоконструкции",
+        "company_name": "Atomic Test Company",
+        "phone_main": "+7 917 509 79 97",
+        "phone_secondary": "+7 985 554 16 69",
+        "email": "artemtozlan5@gmail.com",
+        "address": "Москва и МО, Производственный проезд, 1",
+        "hours": "Ежедневно 9:00 - 21:00",
+        "hero_subtitle": "ваша зона комфорта",
+        "hero_title": "evilТест",
+        "hero_description": "Работаем по Москве и МО. Своё производство. Гарантия 2 года.",
+        "hero_cta_text": "Рассчитать стоимость",
+        "hero_cta_link": "#calculator",
+        "hero_bg": "https://images.pexels.com/photos/162568/fence-iron-gate-garden-162568.jpeg?auto=compress&cs=tinysrgb&w=1920",
+        "advantages": [
+          {
+            "icon": "🛡️",
+            "title": "Работа по договору",
+            "desc": "Фиксируем стоимость и сроки. Никаких скрытых платежей."
+          },
+          {
+            "icon": "🏭",
+            "title": "Собственный цех",
+            "desc": "Изготавливаем конструкции сами, без посредников."
+          },
+          {
+            "icon": "⏱️",
+            "title": "Точно в срок",
+            "desc": "Бригады с опытом от 7 лет. Монтаж за 1-2 дня."
+          },
+          {
+            "icon": "✅",
+            "title": "Гарантия 2 года",
+            "desc": "Мы уверены в качестве, поэтому даём честную гарантию."
+          }
+        ],
+        "calc_title": "Быстрый расчет стоимости забора",
+        "calc_subtitle": "Ответьте на 3 вопроса и узнайте ориентировочную цену",
+        "calc_fences": [
+          {
+            "id": "f1",
+            "name": "Профнастил",
+            "price": 3000,
+            "img": "https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          },
+          {
+            "id": "f2",
+            "name": "Евроштакетник",
+            "price": 4500,
+            "img": "https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          },
+          {
+            "id": "f3",
+            "name": "3D Сетка",
+            "price": 2000,
+            "img": "https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          }
+        ],
+        "calc_extras": [
+          {
+            "id": "gate",
+            "name": "Ворота (Откатные)",
+            "price": 35000,
+            "img": "https://images.pexels.com/photos/2251247/pexels-photo-2251247.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "id": "wicket",
+            "name": "Калитка",
+            "price": 15000,
+            "img": "https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=600"
+          }
+        ],
+        "calc_heights": [
+          {
+            "value": 1.5,
+            "label": "1.5 м",
+            "multiplier": 1
+          },
+          {
+            "value": 1.8,
+            "label": "1.8 м",
+            "multiplier": 1.15
+          },
+          {
+            "value": 2,
+            "label": "2.0 м",
+            "multiplier": 1.25
+          },
+          {
+            "value": 2.5,
+            "label": "2.5 м",
+            "multiplier": 1.5
+          }
+        ],
+        "calc_paint_options": [
+          {
+            "id": "none",
+            "name": "Без покраски",
+            "multiplier": 1
+          },
+          {
+            "id": "ground",
+            "name": "Грунт-эмаль",
+            "multiplier": 1.1
+          },
+          {
+            "id": "powder",
+            "name": "Порошковая покраска",
+            "multiplier": 1.2
+          }
+        ],
+        "calc_delivery_fee": 5000,
+        "calc_discount_threshold": 100,
+        "calc_discount_percent": 5,
+        "services_title": "Наши услуги",
+        "services_desc": "Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.",
+        "services": [
+          {
+            "title": "Заборы и ограждения",
+            "desc": "Профнастил, евроштакетник, 3D сетка, жалюзи.",
+            "img": "https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Калитки",
+            "desc": "Металлические, с элементами ковки, врезные замки.",
+            "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Откатные ворота",
+            "desc": "Автоматика, консольные системы, монтаж под ключ.",
+            "img": "https://images.pexels.com/photos/210617/pexels-photo-210617.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Навесы для авто",
+            "desc": "Арочные и односкатные навесы из поликарбоната.",
+            "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+          }
+        ],
+        "portfolio_title": "Выполненные объекты",
+        "portfolio_subtitle": "Реальные примеры наших работ в Москве и области",
+        "portfolio": [
+          {
+            "title": "Навес на 2 машины",
+            "tag": "МО, Одинцово",
+            "img": "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "title": "Забор жалюзи",
+            "tag": "Истра",
+            "img": "https://images.unsplash.com/photo-1622379361879-668d2a650992?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "title": "Кованые перила",
+            "tag": "Химки",
+            "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "id": "1775289399639",
+            "title": "Тестовый объект",
+            "tag": "Москва",
+            "img": "https://example.com/test.jpg"
+          }
+        ],
+        "contacts_title": "Свяжитесь с нами",
+        "contacts_subtitle": "Контактная информация",
+        "contacts_desc": "Готовы обсудить ваш проект? Позвоните нам или напишите на почту.",
+        "contacts_form_title": "Оставьте заявку",
+        "contacts_form_consent": "Я согласен на обработку персональных данных",
+        "contacts_form_submit": "Отправить",
+        "footer_text": "© 2025 Арт Периметр. Все права защищены.",
+        "footer_privacy": "#"
+      }
+    },
+    {
+      "timestamp": 1775289399697,
+      "date": "04.04.2026, 07:56:39",
+      "changes": [
+        "hero_title"
+      ],
+      "snapshot": {
+        "site_title": "Арт Периметр — Металлоконструкции",
+        "company_name": "Atomic Test Company",
+        "phone_main": "+7 917 509 79 97",
+        "phone_secondary": "+7 985 554 16 69",
+        "email": "artemtozlan5@gmail.com",
+        "address": "Москва и МО, Производственный проезд, 1",
+        "hours": "Ежедневно 9:00 - 21:00",
+        "hero_subtitle": "ваша зона комфорта",
+        "hero_title": "Профессиональный монтаж заборов и металлоконструкций",
+        "hero_description": "Работаем по Москве и МО. Своё производство. Гарантия 2 года.",
+        "hero_cta_text": "Рассчитать стоимость",
+        "hero_cta_link": "#calculator",
+        "hero_bg": "https://images.pexels.com/photos/162568/fence-iron-gate-garden-162568.jpeg?auto=compress&cs=tinysrgb&w=1920",
+        "advantages": [
+          {
+            "icon": "🛡️",
+            "title": "Работа по договору",
+            "desc": "Фиксируем стоимость и сроки. Никаких скрытых платежей."
+          },
+          {
+            "icon": "🏭",
+            "title": "Собственный цех",
+            "desc": "Изготавливаем конструкции сами, без посредников."
+          },
+          {
+            "icon": "⏱️",
+            "title": "Точно в срок",
+            "desc": "Бригады с опытом от 7 лет. Монтаж за 1-2 дня."
+          },
+          {
+            "icon": "✅",
+            "title": "Гарантия 2 года",
+            "desc": "Мы уверены в качестве, поэтому даём честную гарантию."
+          }
+        ],
+        "calc_title": "Быстрый расчет стоимости забора",
+        "calc_subtitle": "Ответьте на 3 вопроса и узнайте ориентировочную цену",
+        "calc_fences": [
+          {
+            "id": "f1",
+            "name": "Профнастил",
+            "price": 3000,
+            "img": "https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          },
+          {
+            "id": "f2",
+            "name": "Евроштакетник",
+            "price": 4500,
+            "img": "https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          },
+          {
+            "id": "f3",
+            "name": "3D Сетка",
+            "price": 2000,
+            "img": "https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600",
+            "heights": [
+              1.5,
+              1.8,
+              2,
+              2.5
+            ]
+          }
+        ],
+        "calc_extras": [
+          {
+            "id": "gate",
+            "name": "Ворота (Откатные)",
+            "price": 35000,
+            "img": "https://images.pexels.com/photos/2251247/pexels-photo-2251247.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "id": "wicket",
+            "name": "Калитка",
+            "price": 15000,
+            "img": "https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=600"
+          }
+        ],
+        "calc_heights": [
+          {
+            "value": 1.5,
+            "label": "1.5 м",
+            "multiplier": 1
+          },
+          {
+            "value": 1.8,
+            "label": "1.8 м",
+            "multiplier": 1.15
+          },
+          {
+            "value": 2,
+            "label": "2.0 м",
+            "multiplier": 1.25
+          },
+          {
+            "value": 2.5,
+            "label": "2.5 м",
+            "multiplier": 1.5
+          }
+        ],
+        "calc_paint_options": [
+          {
+            "id": "none",
+            "name": "Без покраски",
+            "multiplier": 1
+          },
+          {
+            "id": "ground",
+            "name": "Грунт-эмаль",
+            "multiplier": 1.1
+          },
+          {
+            "id": "powder",
+            "name": "Порошковая покраска",
+            "multiplier": 1.2
+          }
+        ],
+        "calc_delivery_fee": 5000,
+        "calc_discount_threshold": 100,
+        "calc_discount_percent": 5,
+        "services_title": "Наши услуги",
+        "services_desc": "Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.",
+        "services": [
+          {
+            "title": "Заборы и ограждения",
+            "desc": "Профнастил, евроштакетник, 3D сетка, жалюзи.",
+            "img": "https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Калитки",
+            "desc": "Металлические, с элементами ковки, врезные замки.",
+            "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Откатные ворота",
+            "desc": "Автоматика, консольные системы, монтаж под ключ.",
+            "img": "https://images.pexels.com/photos/210617/pexels-photo-210617.jpeg?auto=compress&cs=tinysrgb&w=600"
+          },
+          {
+            "title": "Навесы для авто",
+            "desc": "Арочные и односкатные навесы из поликарбоната.",
+            "img": "https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600"
+          }
+        ],
+        "portfolio_title": "Выполненные объекты",
+        "portfolio_subtitle": "Реальные примеры наших работ в Москве и области",
+        "portfolio": [
+          {
+            "title": "Навес на 2 машины",
+            "tag": "МО, Одинцово",
+            "img": "https://images.unsplash.com/photo-1595846519845-68e298c2edd8?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "title": "Забор жалюзи",
+            "tag": "Истра",
+            "img": "https://images.unsplash.com/photo-1622379361879-668d2a650992?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "title": "Кованые перила",
+            "tag": "Химки",
+            "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
+          },
+          {
+            "id": "1775289399639",
+            "title": "Тестовый объект",
+            "tag": "Москва",
+            "img": "https://example.com/test.jpg"
+          }
+        ],
+        "contacts_title": "Свяжитесь с нами",
+        "contacts_subtitle": "Контактная информация",
+        "contacts_desc": "Готовы обсудить ваш проект? Позвоните нам или напишите на почту.",
+        "contacts_form_title": "Оставьте заявку",
+        "contacts_form_consent": "Я согласен на обработку персональных данных",
+        "contacts_form_submit": "Отправить",
+        "footer_text": "© 2025 Арт Периметр. Все права защищены.",
+        "footer_privacy": "#"
+      }
+    }
+  ]
+}

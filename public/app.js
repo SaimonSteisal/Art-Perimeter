@@ -205,8 +205,8 @@ const App = (function() {
                                 <div class="final-price" id="finalPrice">${formatter.format(calculateTotal())}</div>
                             </div>
                             <div id="resultDetails" class="result-details"></div>
-                            <input type="text" id="calcName" class="calc-input" placeholder="Ваше имя" required>
-                            <input type="tel" id="calcPhone" class="calc-input" placeholder="Ваш телефон" required>
+                            <input type="text" id="calcName" class="calc-input" placeholder="Ваше имя" required inputmode="text" autocomplete="name">
+                            <input type="tel" id="calcPhone" class="calc-input" placeholder="Ваш телефон" required inputmode="tel" autocomplete="tel" pattern="[\+]?[0-9\s\-\(\)]{10,}">
                             <div id="formHint" class="hint"></div>
                             <button type="submit" class="form-submit">${content.contacts_form_submit}</button>
                             <div class="calc-actions"><button type="button" class="btn btn-secondary" onclick="App.prevCalcStep(3)">Назад</button><div></div></div>
@@ -294,8 +294,8 @@ const App = (function() {
                     <div class="contact-form fade-in">
                         <h3>${content.contacts_form_title}</h3>
                         <form onsubmit="App.submitContactForm(event)">
-                            <input type="text" id="contactName" placeholder="Ваше имя" required>
-                            <input type="tel" id="contactPhone" placeholder="Ваш телефон" required>
+                            <input type="text" id="contactName" placeholder="Ваше имя" required inputmode="text" autocomplete="name">
+                            <input type="tel" id="contactPhone" placeholder="Ваш телефон" required inputmode="tel" autocomplete="tel" pattern="[\+]?[0-9\s\-\(\)]{10,}">
                             <textarea id="contactMessage" rows="4" placeholder="Сообщение"></textarea>
                             <div class="checkbox-group">
                                 <input type="checkbox" id="contactConsent" required>
