@@ -5,6 +5,13 @@ const cors = require('cors');
 
 const app = express();
 const PORT = 3000;
+const LOG_FILE = path.join(__dirname, 'logs.txt');
+
+function logToFile(message) {
+  const timestamp = new Date().toISOString();
+  const line = `[${timestamp}] ${message}\n`;
+  fs.appendFileSync(LOG_FILE, line);
+}
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -292,6 +299,7 @@ app.post('/api/leads', (req, res) => {
     db.leads.unshift(newLead);
     writeDb(db);
     console.log(`📩 Новая заявка: ${newLead.name} (${newLead.phone})`);
+    logToFile(`LEAD: ${newLead.name} (${newLead.phone}) type=${newLead.type || 'unknown'}`);
     res.json({ success: true, id: newLead.id });
   } catch (err) {
     res.status(500).json({ error: 'Не удалось сохранить заявку' });
@@ -408,6 +416,16 @@ app.post('/api/calculate', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Ошибка расчёта' });
   }
+});
+
+app.use((req, res) => {
+  logToFile(`404: ${req.method} ${req.url}`);
+  res.status(404).json({ error: 'Страница не найдена' });
+});
+
+app.use((err, req, res, next) => {
+  logToFile(`500 ERROR: ${err.message}`);
+  res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
 function startServer() {

@@ -35,8 +35,8 @@
  * [ ] **4.6. Git:** Commit "UX: Dynamic content and SEO".
 
 ## Phase 5: Final Polish & Stress Test
- * [ ] **5.1. Log System:** Create a logs.txt file where the server records every lead and every error.
- * [ ] **5.2. Error Pages:** Add a catch-all middleware in Express for 404 and 500 errors.
- * [ ] **5.3. Performance Check:** Measure API response time in test.js (must be < 50ms).
- * [ ] **5.4. Final Report:** Generate a summary of the whole project state.
+ * [x] **5.1. Log System:** Create a logs.txt file where the server records every lead and every error.
+ * [x] **5.2. Error Pages:** Add a catch-all middleware in Express for 404 and 500 errors.
+ * [x] **5.3. Performance Check:** Measure API response time in test.js (must be < 50ms).
+ * [x] **5.4. Final Report:** Generate a summary of the whole project state.
  * [ ] **5.5. Git:** Final Commit "Release: v1.0 Production Ready".

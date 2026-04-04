@@ -633,3 +633,54 @@ test('GET /api/data — delivery fee и discount config доступны', async
   assert.strictEqual(res.body.calc_discount_threshold, 100);
   assert.strictEqual(res.body.calc_discount_percent, 5);
 });
+
+// ==================== PHASE 5: FINAL POLISH & STRESS TEST ====================
+
+test('404 — неизвестный маршрут', async () => {
+  const res = await request('GET', '/api/nonexistent');
+  assert.strictEqual(res.status, 404);
+  assert.strictEqual(res.body.error, 'Страница не найдена');
+});
+
+test('GET /api/data — response time < 50ms', async () => {
+  const start = Date.now();
+  const res = await request('GET', '/api/data');
+  const elapsed = Date.now() - start;
+  assert.strictEqual(res.status, 200);
+  assert.ok(elapsed < 50, `Response time ${elapsed}ms exceeds 50ms limit`);
+});
+
+test('POST /api/calculate — response time < 50ms', async () => {
+  const start = Date.now();
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: 2.0, paintMultiplier: 1.0, addons: [], delivery: false });
+  const elapsed = Date.now() - start;
+  assert.strictEqual(res.status, 200);
+  assert.ok(elapsed < 50, `Response time ${elapsed}ms exceeds 50ms limit`);
+});
+
+test('GET /api/leads — response time < 50ms', async () => {
+  const start = Date.now();
+  const res = await request('GET', '/api/leads');
+  const elapsed = Date.now() - start;
+  assert.strictEqual(res.status, 200);
+  assert.ok(elapsed < 50, `Response time ${elapsed}ms exceeds 50ms limit`);
+});
+
+test('POST /api/login — response time < 50ms', async () => {
+  const start = Date.now();
+  const res = await request('POST', '/api/login', { password: ADMIN_PASSWORD });
+  const elapsed = Date.now() - start;
+  assert.strictEqual(res.status, 200);
+  assert.ok(elapsed < 50, `Response time ${elapsed}ms exceeds 50ms limit`);
+});
+
+test('logs.txt — создаётся при записи заявки', async () => {
+  const logPath = path.join(__dirname, 'logs.txt');
+  if (fs.existsSync(logPath)) fs.unlinkSync(logPath);
+  const lead = { type: 'log-test', name: 'LogTest', phone: '+7 000 111 22 33' };
+  await request('POST', '/api/leads', lead);
+  assert.ok(fs.existsSync(logPath), 'logs.txt should exist');
+  const content = fs.readFileSync(logPath, 'utf8');
+  assert.ok(content.includes('LEAD:'));
+  assert.ok(content.includes('LogTest'));
+});
