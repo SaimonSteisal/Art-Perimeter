@@ -13,7 +13,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const DB_FILE = path.join(__dirname, 'db.json');
 const ADMIN_PASSWORD = 'admin123';
-const ADMIN_TOKEN = 'super-secret-token-123';
+const ADMIN_TOKEN_SECRET = 'super-secret-token-123';
+const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+function generateToken() {
+  return JSON.stringify({ secret: ADMIN_TOKEN_SECRET, issued: Date.now() });
+}
+
+function validateToken(token) {
+  try {
+    const parsed = JSON.parse(token);
+    if (parsed.secret !== ADMIN_TOKEN_SECRET) return false;
+    if (Date.now() - parsed.issued > TOKEN_EXPIRY_MS) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function sanitizeInput(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/<[^>]*>/g, '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function sanitizeObject(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  const result = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value === 'string') {
+      result[key] = sanitizeInput(value);
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = sanitizeObject(value);
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
+}
 
 const defaultDb = {
   content: {
@@ -193,11 +229,12 @@ app.get('/api/leads', (req, res) => {
 app.post('/api/leads', (req, res) => {
   try {
     const db = readDb();
+    const sanitized = sanitizeObject(req.body);
     const newLead = {
       id: Date.now().toString(),
       timestamp: Date.now(),
       date: new Date().toLocaleString('ru-RU'),
-      ...req.body
+      ...sanitized
     };
     db.leads.unshift(newLead);
     writeDb(db);
@@ -208,10 +245,54 @@ app.post('/api/leads', (req, res) => {
   }
 });
 
+app.delete('/api/leads/:id', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const before = db.leads.length;
+    db.leads = db.leads.filter(lead => lead.id !== req.params.id);
+    if (db.leads.length === before) {
+      return res.status(404).json({ error: 'Заявка не найдена' });
+    }
+    writeDb(db);
+    console.log(`🗑️ Заявка удалена: ${req.params.id}`);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось удалить заявку' });
+  }
+});
+
+app.post('/api/portfolio', (req, res) => {
+  const { token, item } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const sanitized = sanitizeObject(item);
+    const newItem = {
+      id: Date.now().toString(),
+      title: sanitized.title || 'Без названия',
+      tag: sanitized.tag || '',
+      img: sanitized.img || ''
+    };
+    db.content.portfolio.push(newItem);
+    writeDb(db);
+    console.log(`🖼️ Портфолио добавлено: ${newItem.title}`);
+    res.json({ success: true, item: newItem });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось добавить в портфолио' });
+  }
+});
+
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   if (password === ADMIN_PASSWORD) {
-    res.json({ success: true, token: ADMIN_TOKEN });
+    const token = generateToken();
+    res.json({ success: true, token });
   } else {
     res.status(401).json({ success: false, message: 'Неверный пароль' });
   }
@@ -220,13 +301,13 @@ app.post('/api/login', (req, res) => {
 app.post('/api/save', (req, res) => {
   const { token, newContent } = req.body;
 
-  if (token !== ADMIN_TOKEN) {
+  if (!validateToken(token)) {
     return res.status(403).json({ error: 'Доступ запрещён' });
   }
 
   try {
     const db = readDb();
-    db.content = { ...db.content, ...newContent };
+    db.content = { ...db.content, ...sanitizeObject(newContent) };
     writeDb(db);
     console.log('✅ Контент обновлён');
     res.json({ success: true });
@@ -296,4 +377,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE };
+module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE };

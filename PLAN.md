@@ -15,15 +15,15 @@
  * [x] **2.4. Discount System:** Implement a logic that applies a 5% discount if the total area > 100m.
  * [x] **2.5. Test Edge Cases:** Add tests for 0 length, negative values, and huge orders in test.js.
  * [x] **2.6. Verification:** Run node test.js.
- * [ ] **2.7. Git:** Commit "Logic: Expanded calculator formulas".
+ * [x] **2.7. Git:** Commit "Logic: Expanded calculator formulas".
 
 ## Phase 3: Admin API & Security (The "Shield")
- * [ ] **3.1. Token Expiry:** (Simulation) Add a timestamp to ADMIN_TOKEN validation logic.
- * [ ] **3.2. Lead Management:** Create DELETE /api/leads/:id endpoint to allow admins to clear old requests.
- * [ ] **3.3. Portfolio Editor:** Create POST /api/portfolio endpoint to add new items via Admin Panel.
- * [ ] **3.4. Input Sanitization:** Add a helper to strip HTML tags from all incoming POST data (protection against XSS).
- * [ ] **3.5. Security Tests:** Add tests for unauthorized access attempts in test.js.
- * [ ] **3.6. Verification:** Run node test.js.
+ * [x] **3.1. Token Expiry:** (Simulation) Add a timestamp to ADMIN_TOKEN validation logic.
+ * [x] **3.2. Lead Management:** Create DELETE /api/leads/:id endpoint to allow admins to clear old requests.
+ * [x] **3.3. Portfolio Editor:** Create POST /api/portfolio endpoint to add new items via Admin Panel.
+ * [x] **3.4. Input Sanitization:** Add a helper to strip HTML tags from all incoming POST data (protection against XSS).
+ * [x] **3.5. Security Tests:** Add tests for unauthorized access attempts in test.js.
+ * [x] **3.6. Verification:** Run node test.js.
  * [ ] **3.7. Git:** Commit "Security: Admin API and Sanitization".
 
 ## Phase 4: Frontend Integration & Optimization (The "Face")

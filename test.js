@@ -3,10 +3,16 @@ const assert = require('node:assert');
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { app, initDb, readDb, writeDb, backupDb, validateDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE } = require('./server');
+const { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, defaultDb, ADMIN_PASSWORD, DB_FILE } = require('./server');
 
 const TEST_PORT = 3999;
 let server;
+let validToken;
+
+async function getValidToken() {
+  const res = await request('POST', '/api/login', { password: ADMIN_PASSWORD });
+  return res.body.token;
+}
 
 // Helper to make HTTP requests
 function request(method, pathname, body = null) {
@@ -94,7 +100,10 @@ test('POST /api/login — верный пароль', async () => {
   const res = await request('POST', '/api/login', { password: ADMIN_PASSWORD });
   assert.strictEqual(res.status, 200);
   assert.strictEqual(res.body.success, true);
-  assert.strictEqual(res.body.token, ADMIN_TOKEN);
+  assert.ok(res.body.token);
+  const parsed = JSON.parse(res.body.token);
+  assert.strictEqual(parsed.secret, 'super-secret-token-123');
+  assert.ok(parsed.issued);
 });
 
 test('POST /api/login — неверный пароль', async () => {
@@ -105,8 +114,9 @@ test('POST /api/login — неверный пароль', async () => {
 });
 
 test('POST /api/save — верный токен', async () => {
+  const token = await getValidToken();
   const newContent = { company_name: 'Новое название' };
-  const res = await request('POST', '/api/save', { token: ADMIN_TOKEN, newContent });
+  const res = await request('POST', '/api/save', { token, newContent });
   assert.strictEqual(res.status, 200);
   assert.strictEqual(res.body.success, true);
 });
@@ -118,8 +128,9 @@ test('POST /api/save — неверный токен', async () => {
 });
 
 test('POST /api/save — контент обновляется в БД', async () => {
+  const token = await getValidToken();
   const newContent = { hero_title: 'Тестовый заголовок' };
-  await request('POST', '/api/save', { token: ADMIN_TOKEN, newContent });
+  await request('POST', '/api/save', { token, newContent });
   const db = readDb();
   assert.strictEqual(db.content.hero_title, 'Тестовый заголовок');
 });
@@ -445,4 +456,107 @@ test('defaultDb — calc_discount_threshold = 100', () => {
 
 test('defaultDb — calc_discount_percent = 5', () => {
   assert.strictEqual(defaultDb.content.calc_discount_percent, 5);
+});
+
+// ==================== PHASE 3: SECURITY TESTS ====================
+
+test('generateToken — создаёт валидный токен', () => {
+  const token = generateToken();
+  assert.ok(token);
+  assert.strictEqual(validateToken(token), true);
+});
+
+test('validateToken — отклоняет неверный токен', () => {
+  assert.strictEqual(validateToken('bad-token'), false);
+  assert.strictEqual(validateToken('{"secret":"wrong","issued":' + Date.now() + '}'), false);
+});
+
+test('validateToken — отклоняет просроченный токен', () => {
+  const expired = JSON.stringify({ secret: 'super-secret-token-123', issued: Date.now() - 25 * 60 * 60 * 1000 });
+  assert.strictEqual(validateToken(expired), false);
+});
+
+test('DELETE /api/leads/:id — удаляет заявку с токеном', async () => {
+  const lead = { type: 'test', name: 'Удали меня', phone: '+7 000 000 00 00' };
+  const createRes = await request('POST', '/api/leads', lead);
+  const leadId = createRes.body.id;
+  const token = await getValidToken();
+  const res = await request('DELETE', `/api/leads/${leadId}?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  const db = readDb();
+  assert.ok(!db.leads.find(l => l.id === leadId));
+});
+
+test('DELETE /api/leads/:id — без токена 403', async () => {
+  const res = await request('DELETE', '/api/leads/fake-id');
+  assert.strictEqual(res.status, 403);
+});
+
+test('DELETE /api/leads/:id — несуществующий ID 404', async () => {
+  const token = await getValidToken();
+  const res = await request('DELETE', `/api/leads/nonexistent-id?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 404);
+});
+
+test('POST /api/portfolio — добавляет элемент с токеном', async () => {
+  const token = await getValidToken();
+  const item = { title: 'Тестовый объект', tag: 'Москва', img: 'https://example.com/test.jpg' };
+  const res = await request('POST', '/api/portfolio', { token, item });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.item.title, 'Тестовый объект');
+});
+
+test('POST /api/portfolio — без токена 403', async () => {
+  const res = await request('POST', '/api/portfolio', { token: 'bad', item: {} });
+  assert.strictEqual(res.status, 403);
+});
+
+test('sanitizeInput — удаляет HTML теги', () => {
+  assert.strictEqual(sanitizeInput('<script>alert(1)</script>'), 'alert(1)');
+  assert.strictEqual(sanitizeInput('<b>bold</b>'), 'bold');
+  assert.strictEqual(sanitizeInput('Hello <img src=x onerror=alert(1)> World'), 'Hello  World');
+});
+
+test('sanitizeInput — экранирует спецсимволы', () => {
+  assert.strictEqual(sanitizeInput('a & b'), 'a &amp; b');
+  assert.strictEqual(sanitizeInput('"quoted"'), '&quot;quoted&quot;');
+  assert.strictEqual(sanitizeInput("it's"), 'it&#x27;s');
+});
+
+test('sanitizeObject — санитизирует вложенные строки', () => {
+  const obj = { name: '<script>x</script>', details: { msg: '<b>hi</b>' }, count: 42 };
+  const result = sanitizeObject(obj);
+  assert.strictEqual(result.name, 'x');
+  assert.strictEqual(result.details.msg, 'hi');
+  assert.strictEqual(result.count, 42);
+});
+
+test('POST /api/leads — санитизирует входные данные', async () => {
+  const lead = { type: 'calc', name: '<script>hack</script>', phone: '+7 999 000 00 00' };
+  const res = await request('POST', '/api/leads', lead);
+  assert.strictEqual(res.status, 200);
+  const db = readDb();
+  assert.strictEqual(db.leads[0].name, 'hack');
+});
+
+test('POST /api/save — санитизирует контент', async () => {
+  const token = await getValidToken();
+  const newContent = { hero_title: '<script>evil</script>Тест' };
+  await request('POST', '/api/save', { token, newContent });
+  const db = readDb();
+  assert.strictEqual(db.content.hero_title, 'evilТест');
+});
+
+test('POST /api/login — неверный пароль 401', async () => {
+  const res = await request('POST', '/api/login', { password: 'wrongpass' });
+  assert.strictEqual(res.status, 401);
+  assert.strictEqual(res.body.success, false);
+});
+
+test('POST /api/save — просроченный токен 403', async () => {
+  const expired = JSON.stringify({ secret: 'super-secret-token-123', issued: Date.now() - 25 * 60 * 60 * 1000 });
+  const res = await request('POST', '/api/save', { token: expired, newContent: {} });
+  assert.strictEqual(res.status, 403);
 });
