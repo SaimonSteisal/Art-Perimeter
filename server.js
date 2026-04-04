@@ -74,19 +74,88 @@ const defaultDb = {
   leads: []
 };
 
+const DB_SCHEMA = {
+  content: {
+    requiredStrings: ['site_title', 'company_name', 'phone_main', 'phone_secondary', 'email', 'address', 'hours', 'hero_subtitle', 'hero_title', 'hero_description', 'hero_cta_text', 'hero_cta_link', 'hero_bg', 'calc_title', 'calc_subtitle', 'services_title', 'services_desc', 'portfolio_title', 'portfolio_subtitle', 'contacts_title', 'contacts_subtitle', 'contacts_desc', 'contacts_form_title', 'contacts_form_consent', 'contacts_form_submit', 'footer_text', 'footer_privacy'],
+    requiredArrays: ['advantages', 'calc_fences', 'calc_extras', 'services', 'portfolio']
+  },
+  leads: 'array'
+};
+
+function validateDb(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object') {
+    return ['DB data is not an object'];
+  }
+  if (!data.content || typeof data.content !== 'object') {
+    errors.push('Missing or invalid "content" object');
+  } else {
+    for (const key of DB_SCHEMA.content.requiredStrings) {
+      if (typeof data.content[key] !== 'string') {
+        errors.push(`Missing or invalid string field: content.${key}`);
+      }
+    }
+    for (const key of DB_SCHEMA.content.requiredArrays) {
+      if (!Array.isArray(data.content[key])) {
+        errors.push(`Missing or invalid array field: content.${key}`);
+      }
+    }
+  }
+  if (!Array.isArray(data.leads)) {
+    errors.push('Missing or invalid "leads" array');
+  }
+  return errors;
+}
+
+function backupDb() {
+  if (fs.existsSync(DB_FILE)) {
+    const backupPath = DB_FILE + '.bak';
+    fs.copyFileSync(DB_FILE, backupPath);
+    console.log('💾 Бэкап создан: db.json.bak');
+    return backupPath;
+  }
+  return null;
+}
+
+function writeDb(data) {
+  const errors = validateDb(data);
+  if (errors.length > 0) {
+    console.error('❌ Ошибка валидации БД:', errors);
+    throw new Error(`Invalid DB structure: ${errors.join(', ')}`);
+  }
+  backupDb();
+  const tempPath = DB_FILE + '.tmp';
+  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
+  fs.renameSync(tempPath, DB_FILE);
+}
+
 function initDb() {
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
     console.log('✅ db.json создан');
+  } else {
+    try {
+      const db = readDb();
+      const errors = validateDb(db);
+      if (errors.length > 0) {
+        console.warn('⚠️ db.json повреждён, восстанавливаю из default:', errors);
+        fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
+      }
+    } catch (err) {
+      console.warn('⚠️ Не удалось прочитать db.json, создаю заново:', err.message);
+      fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
+    }
   }
 }
 
 function readDb() {
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-}
-
-function writeDb(data) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  const raw = fs.readFileSync(DB_FILE, 'utf8');
+  const data = JSON.parse(raw);
+  const errors = validateDb(data);
+  if (errors.length > 0) {
+    throw new Error(`Invalid DB structure: ${errors.join(', ')}`);
+  }
+  return data;
 }
 
 app.get('/api/data', (req, res) => {
@@ -172,4 +241,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, initDb, readDb, writeDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE };
+module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE };

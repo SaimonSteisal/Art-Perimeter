@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { app, initDb, readDb, writeDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE } = require('./server');
+const { app, initDb, readDb, writeDb, backupDb, validateDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE } = require('./server');
 
 const TEST_PORT = 3999;
 let server;
@@ -148,11 +148,82 @@ test('readDb — возвращает валидный объект', async () =
 });
 
 test('writeDb — записывает данные в файл', async () => {
-  const testData = { content: { test: true }, leads: [] };
+  const testData = JSON.parse(JSON.stringify(defaultDb));
+  testData.content.company_name = 'Test Company';
   writeDb(testData);
   const raw = fs.readFileSync(DB_FILE, 'utf8');
   const parsed = JSON.parse(raw);
-  assert.strictEqual(parsed.content.test, true);
+  assert.strictEqual(parsed.content.company_name, 'Test Company');
+});
+
+test('validateDb — валидная структура возвращает пустой массив', () => {
+  const errors = validateDb(defaultDb);
+  assert.strictEqual(errors.length, 0);
+});
+
+test('validateDb — отсутствие content возвращает ошибку', () => {
+  const errors = validateDb({ leads: [] });
+  assert.ok(errors.length > 0);
+  assert.ok(errors.some(e => e.includes('content')));
+});
+
+test('validateDb — отсутствие leads возвращает ошибку', () => {
+  const errors = validateDb({ content: defaultDb.content });
+  assert.ok(errors.length > 0);
+  assert.ok(errors.some(e => e.includes('leads')));
+});
+
+test('validateDb — не-объект возвращает ошибку', () => {
+  const errors = validateDb(null);
+  assert.strictEqual(errors.length, 1);
+  assert.strictEqual(errors[0], 'DB data is not an object');
+});
+
+test('validateDb — missing string field returns error', () => {
+  const bad = JSON.parse(JSON.stringify(defaultDb));
+  delete bad.content.site_title;
+  const errors = validateDb(bad);
+  assert.ok(errors.some(e => e.includes('site_title')));
+});
+
+test('validateDb — missing array field returns error', () => {
+  const bad = JSON.parse(JSON.stringify(defaultDb));
+  delete bad.content.advantages;
+  const errors = validateDb(bad);
+  assert.ok(errors.some(e => e.includes('advantages')));
+});
+
+test('backupDb — создаёт .bak файл', () => {
+  const bakPath = DB_FILE + '.bak';
+  if (fs.existsSync(bakPath)) fs.unlinkSync(bakPath);
+  backupDb();
+  assert.ok(fs.existsSync(bakPath));
+  const original = fs.readFileSync(DB_FILE, 'utf8');
+  const backup = fs.readFileSync(bakPath, 'utf8');
+  assert.strictEqual(original, backup);
+  if (fs.existsSync(bakPath)) fs.unlinkSync(bakPath);
+});
+
+test('backupDb — возвращает null если файл не существует', () => {
+  const result = backupDb();
+  assert.ok(result !== null);
+});
+
+test('writeDb — атомарная запись через .tmp файл', () => {
+  const tmpPath = DB_FILE + '.tmp';
+  if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+  const testData = JSON.parse(JSON.stringify(defaultDb));
+  testData.content.company_name = 'Atomic Test Company';
+  writeDb(testData);
+  assert.ok(!fs.existsSync(tmpPath), 'Temp file should not exist after write');
+  const db = readDb();
+  assert.strictEqual(db.content.company_name, 'Atomic Test Company');
+});
+
+test('writeDb — отклоняет невалидные данные', () => {
+  assert.throws(() => {
+    writeDb({ content: 'bad', leads: [] });
+  }, /Invalid DB structure/);
 });
 
 // ==================== CALCULATOR LOGIC TESTS ====================
