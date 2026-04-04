@@ -39,14 +39,28 @@ const defaultDb = {
     calc_title: 'Быстрый расчет стоимости забора',
     calc_subtitle: 'Ответьте на 3 вопроса и узнайте ориентировочную цену',
     calc_fences: [
-      { id: 'f1', name: 'Профнастил', price: 3000, img: 'https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600' },
-      { id: 'f2', name: 'Евроштакетник', price: 4500, img: 'https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600' },
-      { id: 'f3', name: '3D Сетка', price: 2000, img: 'https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600' }
+      { id: 'f1', name: 'Профнастил', price: 3000, img: 'https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600', heights: [1.5, 1.8, 2.0, 2.5] },
+      { id: 'f2', name: 'Евроштакетник', price: 4500, img: 'https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600', heights: [1.5, 1.8, 2.0, 2.5] },
+      { id: 'f3', name: '3D Сетка', price: 2000, img: 'https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600', heights: [1.5, 1.8, 2.0, 2.5] }
     ],
     calc_extras: [
       { id: 'gate', name: 'Ворота (Откатные)', price: 35000, img: 'https://images.pexels.com/photos/2251247/pexels-photo-2251247.jpeg?auto=compress&cs=tinysrgb&w=600' },
       { id: 'wicket', name: 'Калитка', price: 15000, img: 'https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=600' }
     ],
+    calc_heights: [
+      { value: 1.5, label: '1.5 м', multiplier: 1.0 },
+      { value: 1.8, label: '1.8 м', multiplier: 1.15 },
+      { value: 2.0, label: '2.0 м', multiplier: 1.25 },
+      { value: 2.5, label: '2.5 м', multiplier: 1.5 }
+    ],
+    calc_paint_options: [
+      { id: 'none', name: 'Без покраски', multiplier: 1.0 },
+      { id: 'ground', name: 'Грунт-эмаль', multiplier: 1.1 },
+      { id: 'powder', name: 'Порошковая покраска', multiplier: 1.2 }
+    ],
+    calc_delivery_fee: 5000,
+    calc_discount_threshold: 100,
+    calc_discount_percent: 5,
     services_title: 'Наши услуги',
     services_desc: 'Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.',
     services: [
@@ -218,6 +232,47 @@ app.post('/api/save', (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Не удалось сохранить изменения' });
+  }
+});
+
+app.post('/api/calculate', (req, res) => {
+  try {
+    const { fencePrice, length, height, paintMultiplier, addons, delivery } = req.body;
+
+    if (!fencePrice || !length || length <= 0) {
+      return res.status(400).json({ error: 'Укажите цену и длину забора' });
+    }
+
+    const heightOptions = defaultDb.content.calc_heights || [];
+    const heightOpt = heightOptions.find(h => h.value === height);
+    const hm = heightOpt ? heightOpt.multiplier : (height && height > 0 ? height : 1.0);
+    const pm = paintMultiplier || 1.0;
+    const fenceCost = length * fencePrice * hm * pm;
+    const addonsCost = Array.isArray(addons) ? addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0;
+    const deliveryCost = delivery ? defaultDb.content.calc_delivery_fee || 5000 : 0;
+    let subtotal = fenceCost + addonsCost + deliveryCost;
+
+    const area = length * (heightOpt ? heightOpt.value : (height || 2));
+    let discount = 0;
+    const threshold = defaultDb.content.calc_discount_threshold || 100;
+    const discountPercent = defaultDb.content.calc_discount_percent || 5;
+    if (area > threshold) {
+      discount = subtotal * (discountPercent / 100);
+      subtotal -= discount;
+    }
+
+    res.json({
+      success: true,
+      fenceCost: Math.round(fenceCost),
+      addonsCost: Math.round(addonsCost),
+      deliveryCost: Math.round(deliveryCost),
+      discount: Math.round(discount),
+      discountPercent: discount > 0 ? discountPercent : 0,
+      total: Math.round(subtotal),
+      area: Math.round(area * 100) / 100
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка расчёта' });
   }
 });
 

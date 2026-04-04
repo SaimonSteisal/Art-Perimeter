@@ -42,19 +42,37 @@
         "id": "f1",
         "name": "Профнастил",
         "price": 3000,
-        "img": "https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600"
+        "img": "https://images.pexels.com/photos/5570224/pexels-photo-5570224.jpeg?auto=compress&cs=tinysrgb&w=600",
+        "heights": [
+          1.5,
+          1.8,
+          2,
+          2.5
+        ]
       },
       {
         "id": "f2",
         "name": "Евроштакетник",
         "price": 4500,
-        "img": "https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600"
+        "img": "https://images.pexels.com/photos/5691613/pexels-photo-5691613.jpeg?auto=compress&cs=tinysrgb&w=600",
+        "heights": [
+          1.5,
+          1.8,
+          2,
+          2.5
+        ]
       },
       {
         "id": "f3",
         "name": "3D Сетка",
         "price": 2000,
-        "img": "https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600"
+        "img": "https://images.pexels.com/photos/13880222/pexels-photo-13880222.jpeg?auto=compress&cs=tinysrgb&w=600",
+        "heights": [
+          1.5,
+          1.8,
+          2,
+          2.5
+        ]
       }
     ],
     "calc_extras": [
@@ -71,6 +89,48 @@
         "img": "https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=600"
       }
     ],
+    "calc_heights": [
+      {
+        "value": 1.5,
+        "label": "1.5 м",
+        "multiplier": 1
+      },
+      {
+        "value": 1.8,
+        "label": "1.8 м",
+        "multiplier": 1.15
+      },
+      {
+        "value": 2,
+        "label": "2.0 м",
+        "multiplier": 1.25
+      },
+      {
+        "value": 2.5,
+        "label": "2.5 м",
+        "multiplier": 1.5
+      }
+    ],
+    "calc_paint_options": [
+      {
+        "id": "none",
+        "name": "Без покраски",
+        "multiplier": 1
+      },
+      {
+        "id": "ground",
+        "name": "Грунт-эмаль",
+        "multiplier": 1.1
+      },
+      {
+        "id": "powder",
+        "name": "Порошковая покраска",
+        "multiplier": 1.2
+      }
+    ],
+    "calc_delivery_fee": 5000,
+    "calc_discount_threshold": 100,
+    "calc_discount_percent": 5,
     "services_title": "Наши услуги",
     "services_desc": "Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.",
     "services": [

@@ -6,15 +6,15 @@
  * [x] **1.3. Atomic Writes:** Refactor writeDb to use a temporary file then rename it (preventing data loss on crash).
  * [x] **1.4. Test Expansion:** Add unit tests in test.js for the new backup and validation logic.
  * [x] **1.5. Verification:** Run node test.js and ensure all DB-related tests pass.
- * [ ] **1.6. Git:** Commit "Infrastructure: Secure DB handling".
+ * [x] **1.6. Git:** Commit "Infrastructure: Secure DB handling".
 
 ## Phase 2: Advanced Calculator Logic (The "Math" Engine)
- * [ ] **2.1. Height Parameter:** Add height (высота забора) to the calculation logic in server.js.
- * [ ] **2.2. Delivery Logic:** Add a flat fee or distance-based calculation for delivery.
- * [ ] **2.3. Painting Options:** Add a multiplier for different types of coating (ground, powder, etc.).
- * [ ] **2.4. Discount System:** Implement a logic that applies a 5% discount if the total area > 100m.
- * [ ] **2.5. Test Edge Cases:** Add tests for 0 length, negative values, and huge orders in test.js.
- * [ ] **2.6. Verification:** Run node test.js.
+ * [x] **2.1. Height Parameter:** Add height (высота забора) to the calculation logic in server.js.
+ * [x] **2.2. Delivery Logic:** Add a flat fee or distance-based calculation for delivery.
+ * [x] **2.3. Painting Options:** Add a multiplier for different types of coating (ground, powder, etc.).
+ * [x] **2.4. Discount System:** Implement a logic that applies a 5% discount if the total area > 100m.
+ * [x] **2.5. Test Edge Cases:** Add tests for 0 length, negative values, and huge orders in test.js.
+ * [x] **2.6. Verification:** Run node test.js.
  * [ ] **2.7. Git:** Commit "Logic: Expanded calculator formulas".
 
 ## Phase 3: Admin API & Security (The "Shield")

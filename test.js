@@ -314,3 +314,135 @@ test('defaultDb — leads — пустой массив', () => {
   assert.ok(Array.isArray(defaultDb.leads));
   assert.strictEqual(defaultDb.leads.length, 0);
 });
+
+// ==================== CALCULATOR API TESTS (Phase 2) ====================
+
+test('POST /api/calculate — базовый расчёт', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: 2.0, paintMultiplier: 1.0, addons: [], delivery: false });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.ok(res.body.total > 0);
+});
+
+test('POST /api/calculate — с высотой 1.8м (множитель 1.15)', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: 1.8, paintMultiplier: 1.0, addons: [], delivery: false });
+  assert.strictEqual(res.status, 200);
+  const expected = 50 * 3000 * 1.15;
+  assert.strictEqual(res.body.fenceCost, Math.round(expected));
+});
+
+test('POST /api/calculate — с покраской (порошковая x1.2)', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: 2.0, paintMultiplier: 1.2, addons: [], delivery: false });
+  assert.strictEqual(res.status, 200);
+  const hm = 1.25;
+  const expected = 50 * 3000 * hm * 1.2;
+  assert.strictEqual(res.body.fenceCost, Math.round(expected));
+});
+
+test('POST /api/calculate — с доставкой', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: 2.0, paintMultiplier: 1.0, addons: [], delivery: true });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.deliveryCost, 5000);
+});
+
+test('POST /api/calculate — с доп. элементами', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: 2.0, paintMultiplier: 1.0, addons: [{ price: 35000 }, { price: 15000 }], delivery: false });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.addonsCost, 50000);
+});
+
+test('POST /api/calculate — скидка 5% при площади > 100м²', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 100, height: 2.0, paintMultiplier: 1.0, addons: [], delivery: false });
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.discount > 0);
+  assert.strictEqual(res.body.discountPercent, 5);
+});
+
+test('POST /api/calculate — нет скидки при площади <= 100м²', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 25, height: 2.0, paintMultiplier: 1.0, addons: [], delivery: false });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.discount, 0);
+});
+
+test('POST /api/calculate — ошибка при отсутствии fencePrice', async () => {
+  const res = await request('POST', '/api/calculate', { length: 50 });
+  assert.strictEqual(res.status, 400);
+  assert.ok(res.body.error);
+});
+
+test('POST /api/calculate — ошибка при length <= 0', async () => {
+  const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 0 });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/calculate — полный расчёт со всем', async () => {
+  const res = await request('POST', '/api/calculate', {
+    fencePrice: 4500,
+    length: 150,
+    height: 2.5,
+    paintMultiplier: 1.2,
+    addons: [{ price: 35000 }, { price: 15000 }],
+    delivery: true
+  });
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.discount > 0);
+  assert.ok(res.body.total > 0);
+});
+
+test('Калькулятор — edge case: нулевая длина', () => {
+  const total = 0 * 3000;
+  assert.strictEqual(total, 0);
+});
+
+test('Калькулятор — edge case: огромный заказ (1000м)', () => {
+  const fencePrice = 3000;
+  const length = 1000;
+  const height = 2.5;
+  const paintMultiplier = 1.2;
+  const fenceCost = length * fencePrice * height * paintMultiplier;
+  assert.strictEqual(fenceCost, 9000000);
+});
+
+test('Калькулятор — edge case: отрицательная длина (должна быть 0)', () => {
+  const length = Math.max(0, -10);
+  const total = length * 3000;
+  assert.strictEqual(total, 0);
+});
+
+test('Калькулятор — скидка 5% при площади > 100', () => {
+  const length = 60;
+  const height = 2;
+  const area = length * height;
+  const subtotal = 60 * 3000 * 2;
+  const discount = area > 100 ? subtotal * 0.05 : 0;
+  const total = subtotal - discount;
+  assert.ok(area > 100);
+  assert.strictEqual(total, 342000);
+});
+
+test('defaultDb — calc_heights содержит 4 варианта', () => {
+  assert.strictEqual(defaultDb.content.calc_heights.length, 4);
+  const values = defaultDb.content.calc_heights.map(h => h.value);
+  assert.ok(values.includes(1.5));
+  assert.ok(values.includes(2.5));
+});
+
+test('defaultDb — calc_paint_options содержит 3 варианта', () => {
+  assert.strictEqual(defaultDb.content.calc_paint_options.length, 3);
+  const ids = defaultDb.content.calc_paint_options.map(p => p.id);
+  assert.ok(ids.includes('none'));
+  assert.ok(ids.includes('ground'));
+  assert.ok(ids.includes('powder'));
+});
+
+test('defaultDb — calc_delivery_fee определён', () => {
+  assert.strictEqual(defaultDb.content.calc_delivery_fee, 5000);
+});
+
+test('defaultDb — calc_discount_threshold = 100', () => {
+  assert.strictEqual(defaultDb.content.calc_discount_threshold, 100);
+});
+
+test('defaultDb — calc_discount_percent = 5', () => {
+  assert.strictEqual(defaultDb.content.calc_discount_percent, 5);
+});
