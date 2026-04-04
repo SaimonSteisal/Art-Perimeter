@@ -152,9 +152,10 @@ app.post('/api/save', (req, res) => {
   }
 });
 
-initDb();
-app.listen(PORT, () => {
-  console.log(`
+function startServer() {
+  initDb();
+  app.listen(PORT, () => {
+    console.log(`
 ╔════════════════════════════════════════════╗
 ║  🚀 Сервер запущен!                        ║
 ║                                            ║
@@ -164,4 +165,11 @@ app.listen(PORT, () => {
 ║  💾 База:     db.json                       ║
 ╚════════════════════════════════════════════╝
   `);
-});
+  });
+}
+
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, initDb, readDb, writeDb, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN, DB_FILE };
