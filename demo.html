@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metallum Widget Demo</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #131319;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Container for the widget -->
+    <div id="app-container" class="p-4"></div>
+
+    <!-- Import the widget script -->
+    <script src="./metallum-estimator-widget.js"></script>
+
+    <!-- Initialize the widget using the Registry -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('app-container');
+            
+            // Mock Data Object (Simulating API response or config)
+            const widgetData = {
+                title: "Structural Steel Estimate",
+                materialType: "A36 Steel Beam",
+                basePricePerKg: 2.45,
+                currency: "$",
+                contactEmail: "sales@metalco.com"
+            };
+
+            // METHOD 1: Direct Function Call
+            // container.innerHTML = renderMaterialEstimator(widgetData);
+
+            // METHOD 2: Using the Widget Registry (Recommended for stability)
+            if (window.metallumWidgets && window.metallumWidgets.estimator) {
+                container.innerHTML = window.metallumWidgets.estimator(widgetData);
+                console.log("Widget loaded via registry successfully.");
+            } else if (typeof renderMaterialEstimator === 'function') {
+                // Fallback to direct function
+                container.innerHTML = renderMaterialEstimator(widgetData);
+                console.warn("Registry not found, using direct function call.");
+            } else {
+                console.error("Widget function not loaded");
+                container.innerHTML = '<p class="text-red-500">Error: Widget script failed to load.</p>';
+            }
+        });
+    </script>
+</body>
+</html>
