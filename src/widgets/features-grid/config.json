@@ -1,0 +1,58 @@
+{
+  "id": "features-grid",
+  "name": "Features Grid (Преимущества)",
+  "previewImage": "/assets/previews/features.png",
+  "schema": {
+    "title": {
+      "type": "text",
+      "label": "Заголовок секции",
+      "required": false
+    },
+    "features": {
+      "type": "array",
+      "label": "Список преимуществ",
+      "itemSchema": {
+        "icon": {
+          "type": "text",
+          "label": "Иконка (emoji или SVG)",
+          "required": false
+        },
+        "title": {
+          "type": "text",
+          "label": "Название",
+          "required": true
+        },
+        "description": {
+          "type": "textarea",
+          "label": "Описание",
+          "required": false
+        }
+      }
+    }
+  },
+  "initialData": {
+    "title": "Наши преимущества",
+    "features": [
+      {
+        "icon": "🛡️",
+        "title": "Надежность",
+        "description": "Гарантия на все конструкции 5 лет"
+      },
+      {
+        "icon": "⚡",
+        "title": "Скорость",
+        "description": "Монтаж от 1 дня"
+      },
+      {
+        "icon": "💰",
+        "title": "Честная цена",
+        "description": "Без скрытых платежей и наценок"
+      },
+      {
+        "icon": "📐",
+        "title": "Точность",
+        "description": "Индивидуальный замер и проект"
+      }
+    ]
+  }
+}

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Widget Builder | Art Perimetr</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* METALLUM Design System - Dark Industrial Theme */
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --accent-primary: #c9a227;
+            --accent-hover: #e0b630;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border-color: #333;
+            --success: #22c55e;
+            --error: #ef4444;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Login Screen */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 280px 1fr 350px;
+            gap: 1px;
+            background: var(--border-color);
+            min-height: 100vh;
+        }
+
+        .sidebar, .inspector-panel {
+            background: var(--bg-secondary);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            background: var(--bg-primary);
+            overflow-y: auto;
+        }
+
+        /* Widget Gallery */
+        .widget-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .widget-gallery-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+        }
+
+        .widget-gallery-item:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .widget-preview {
+            aspect-ratio: 16/10;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .widget-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .widget-preview-placeholder {
+            font-size: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .widget-info {
+            padding: 0.75rem;
+        }
+
+        .widget-info h4 {
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .widget-id-badge {
+            font-size: 0.625rem;
+            background: var(--bg-primary);
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--text-secondary);
+        }
+
+        /* Blocks List */
+        .blocks-list {
+            padding: 1rem;
+        }
+
+        .block-list-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .block-list-item:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .block-list-item.selected {
+            border-color: var(--accent-primary);
+            background: rgba(201, 162, 39, 0.1);
+        }
+
+        .block-drag-handle {
+            color: var(--text-secondary);
+            cursor: grab;
+            user-select: none;
+        }
+
+        .block-info {
+            flex: 1;
+        }
+
+        .block-type {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .block-order {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-left: 0.5rem;
+        }
+
+        .block-remove-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .block-remove-btn:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        /* Inspector Form */
+        .inspector-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .inspector-header h3 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .inspector-fields {
+            padding: 1rem;
+        }
+
+        .form-field {
+            margin-bottom: 1rem;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-field label .required {
+            color: var(--error);
+        }
+
+        .form-field input[type="text"],
+        .form-field input[type="number"],
+        .form-field textarea {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* Array/Repeater Fields */
+        .array-field {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .array-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .array-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 0.75rem;
+        }
+
+        .array-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .array-item-header span {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .array-item-remove {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .array-item-remove:hover {
+            background: var(--error);
+            color: white;
+        }
+
+        .sub-field {
+            margin-bottom: 0.5rem;
+        }
+
+        .sub-field:last-child {
+            margin-bottom: 0;
+        }
+
+        .sub-field label {
+            font-size: 0.625rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .sub-field input,
+        .sub-field textarea {
+            width: 100%;
+            padding: 0.375rem 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Preview Area */
+        .preview-area {
+            padding: 1rem;
+            background: #fff;
+            color: #000;
+            min-height: 400px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h1 class="text-xl font-bold mb-6 text-center" style="color: var(--accent-primary);">
+                🔐 Admin Panel
+            </h1>
+            <p class="text-sm text-gray-400 mb-4 text-center">Art Perimetr CMS</p>
+            <input type="password" id="admin-pass" 
+                   class="w-full px-4 py-2 mb-4 bg-[#0a0a0a] border border-[#333] rounded text-white focus:border-[#c9a227] focus:outline-none"
+                   placeholder="Enter password">
+            <button onclick="Admin.init()" 
+                    class="w-full btn btn-primary btn-full">
+                Login
+            </button>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+        <!-- Left Sidebar: Widget Gallery -->
+        <aside class="sidebar">
+            <div class="p-4 border-b border-[#333]">
+                <h2 class="text-lg font-bold">📦 Widgets</h2>
+                <p class="text-xs text-gray-400 mt-1">Add blocks to your page</p>
+            </div>
+            
+            <div class="p-4">
+                <button id="add-widget-btn" class="btn btn-primary btn-full">
+                    + Add Widget
+                </button>
+            </div>
+
+            <div id="widget-gallery" class="widget-gallery">
+                <!-- Widgets loaded from manifest -->
+            </div>
+
+            <div class="p-4 mt-auto border-t border-[#333]">
+                <button onclick="Admin.logout()" class="btn btn-secondary btn-full text-sm">
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content: Blocks & Preview -->
+        <main class="main-content">
+            <div class="tabs">
+                <div class="tab active" data-tab="blocks">Blocks</div>
+                <div class="tab" data-tab="preview">Preview</div>
+                <div class="tab" data-tab="settings">Settings</div>
+            </div>
+
+            <!-- Blocks Tab -->
+            <div id="blocks-tab" class="tab-content active">
+                <div class="flex items-center justify-between p-4 border-b border-[#333]">
+                    <h2 class="text-lg font-bold">Page Blocks</h2>
+                    <button id="save-blocks-btn" class="btn btn-primary btn-sm">
+                        💾 Save Changes
+                    </button>
+                </div>
+                
+                <div id="blocks-list" class="blocks-list">
+                    <!-- Blocks list rendered here -->
+                </div>
+            </div>
+
+            <!-- Preview Tab -->
+            <div id="preview-tab" class="tab-content">
+                <div class="p-4 border-b border-[#333]">
+                    <h2 class="text-lg font-bold">Live Preview</h2>
+                </div>
+                <div id="preview-container" class="preview-area">
+                    <!-- Rendered widgets preview -->
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="p-4 border-b border-[#333]">
+                    <h2 class="text-lg font-bold">Site Settings</h2>
+                </div>
+                <div class="p-4">
+                    <p class="text-gray-400 text-sm">General site settings coming soon...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Sidebar: Property Inspector -->
+        <aside class="inspector-panel">
+            <div class="p-4 border-b border-[#333]">
+                <h2 class="text-lg font-bold">🎛️ Properties</h2>
+                <p class="text-xs text-gray-400 mt-1">Edit selected block</p>
+            </div>
+            
+            <div id="widget-inspector-form">
+                <div style="text-align:center;padding:40px;color:#888;">
+                    Select a block to edit its properties
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/dist/widgets-manifest.json" crossorigin="anonymous"></script>
+    <script src="/public/admin-widgets.js"></script>
+    <script src="/public/widget-manager.js"></script>
+    <script src="/public/admin.js"></script>
+    
+    <script>
+        // Override Admin functions for widget support
+        (function() {
+            const originalShowDashboard = Admin.showDashboard || function() {};
+            
+            Admin.showDashboard = function() {
+                originalShowDashboard();
+                
+                // Initialize widget manager
+                WidgetManager.init('preview-container');
+                
+                // Load blocks
+                AdminWidgetManager.loadBlocksFromAPI().then(() => {
+                    renderPreview();
+                });
+            };
+
+            // Save blocks integration
+            const originalSaveContent = Admin.saveContent || function() {};
+            
+            Admin.saveContent = async function() {
+                // Save regular content first
+                await originalSaveContent();
+                
+                // Then save blocks
+                await AdminWidgetManager.saveBlocksToFirebase();
+            };
+        })();
+
+        // Render preview using WidgetManager
+        function renderPreview() {
+            const blocks = AdminWidgetManager.getBlocks();
+            if (blocks && blocks.length > 0) {
+                WidgetManager.renderPage(blocks);
+            }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                
+                if (tab.dataset.tab === 'preview') {
+                    renderPreview();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "id": "hero-main",
+  "name": "Hero Section (Главный экран)",
+  "previewImage": "/assets/previews/hero.png",
+  "schema": {
+    "title": {
+      "type": "text",
+      "label": "Заголовок",
+      "required": true,
+      "maxLength": 100
+    },
+    "subtitle": {
+      "type": "text",
+      "label": "Подзаголовок",
+      "required": false,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "textarea",
+      "label": "Описание",
+      "required": false,
+      "maxLength": 500
+    },
+    "ctaText": {
+      "type": "text",
+      "label": "Текст кнопки",
+      "required": false
+    },
+    "ctaLink": {
+      "type": "text",
+      "label": "Ссылка кнопки",
+      "required": false
+    },
+    "backgroundImage": {
+      "type": "image",
+      "label": "Фоновое изображение",
+      "required": false
+    }
+  },
+  "initialData": {
+    "title": "Профессиональные металлоконструкции",
+    "subtitle": "Надежные решения для вашего бизнеса",
+    "description": "Изготовление и монтаж заборов, ворот и других металлоконструкций любой сложности",
+    "ctaText": "Рассчитать стоимость",
+    "ctaLink": "#calculator",
+    "backgroundImage": "/assets/hero-bg.jpg"
+  }
+}
