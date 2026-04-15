@@ -393,6 +393,61 @@ app.delete('/api/leads/:id', (req, res) => {
   }
 });
 
+app.post('/api/leads/bulk-delete', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Требуется массив ID заявок' });
+  }
+  try {
+    const db = readDb();
+    const before = db.leads.length;
+    const idsSet = new Set(ids.map(String));
+    db.leads = db.leads.filter(lead => !idsSet.has(lead.id));
+    const deleted = before - db.leads.length;
+    writeDb(db);
+    console.log(`🗑️ Удалено заявок: ${deleted}`);
+    res.json({ success: true, deleted: deleted });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось удалить заявки' });
+  }
+});
+
+app.post('/api/leads/bulk-status', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  const { ids, status } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Требуется массив ID заявок' });
+  }
+  const validStatuses = ['new', 'in_progress', 'completed', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Недопустимый статус. Допустимые: ${validStatuses.join(', ')}` });
+  }
+  try {
+    const db = readDb();
+    const idsSet = new Set(ids.map(String));
+    let updated = 0;
+    db.leads.forEach(lead => {
+      if (idsSet.has(lead.id)) {
+        lead.status = status;
+        lead.statusUpdatedAt = new Date().toLocaleString('ru-RU');
+        updated++;
+      }
+    });
+    writeDb(db);
+    console.log(`✏️ Обновлено статусов: ${updated}`);
+    res.json({ success: true, updated: updated });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось обновить статусы' });
+  }
+});
+
 app.post('/api/portfolio', (req, res) => {
   const { token, item } = req.body;
   if (!validateToken(token)) {

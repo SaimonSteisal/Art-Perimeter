@@ -787,3 +787,80 @@ test('Rate limiting — блокирует после 5 запросов за м
   assert.strictEqual(res.status, 429);
   assert.ok(res.body.error);
 });
+
+// ==================== BULK OPERATIONS TESTS ====================
+
+test('POST /api/leads/bulk-delete — удаляет несколько заявок', async () => {
+  resetRateLimits();
+  const lead1 = { type: 'bulk', name: 'Bulk1', phone: '+7 111 111 11 11' };
+  const lead2 = { type: 'bulk', name: 'Bulk2', phone: '+7 222 222 22 22' };
+  const lead3 = { type: 'bulk', name: 'Bulk3', phone: '+7 333 333 33 33' };
+  const res1 = await request('POST', '/api/leads', lead1);
+  const res2 = await request('POST', '/api/leads', lead2);
+  const res3 = await request('POST', '/api/leads', lead3);
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-delete?token=${encodeURIComponent(token)}`, { ids: [res1.body.id, res2.body.id] });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.deleted, 2);
+  const db = readDb();
+  assert.ok(!db.leads.find(l => l.id === res1.body.id));
+  assert.ok(!db.leads.find(l => l.id === res2.body.id));
+  assert.ok(db.leads.find(l => l.id === res3.body.id));
+});
+
+test('POST /api/leads/bulk-delete — пустой массив ID 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-delete?token=${encodeURIComponent(token)}`, { ids: [] });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/leads/bulk-delete — без токена 403', async () => {
+  const res = await request('POST', '/api/leads/bulk-delete', { ids: ['some-id'] });
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/leads/bulk-delete — не массив 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-delete?token=${encodeURIComponent(token)}`, { ids: 'not-array' });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/leads/bulk-status — обновляет статусы нескольких заявок', async () => {
+  resetRateLimits();
+  const lead1 = { type: 'status', name: 'Status1', phone: '+7 444 444 44 44' };
+  const lead2 = { type: 'status', name: 'Status2', phone: '+7 555 555 55 55' };
+  const res1 = await request('POST', '/api/leads', lead1);
+  const res2 = await request('POST', '/api/leads', lead2);
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-status?token=${encodeURIComponent(token)}`, { ids: [res1.body.id, res2.body.id], status: 'completed' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.updated, 2);
+  const db = readDb();
+  assert.strictEqual(db.leads.find(l => l.id === res1.body.id).status, 'completed');
+  assert.strictEqual(db.leads.find(l => l.id === res2.body.id).status, 'completed');
+});
+
+test('POST /api/leads/bulk-status — недопустимый статус 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-status?token=${encodeURIComponent(token)}`, { ids: ['some-id'], status: 'invalid' });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/leads/bulk-status — пустой массив ID 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-status?token=${encodeURIComponent(token)}`, { ids: [], status: 'completed' });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/leads/bulk-status — без токена 403', async () => {
+  const res = await request('POST', '/api/leads/bulk-status', { ids: ['some-id'], status: 'completed' });
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/leads/bulk-status — не массив ID 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', `/api/leads/bulk-status?token=${encodeURIComponent(token)}`, { ids: 'not-array', status: 'completed' });
+  assert.strictEqual(res.status, 400);
+});
