@@ -1,11 +1,19 @@
-[2026-04-04T07:56:39.818Z] LEAD: LogTest (+7 000 111 22 33) type=log-test status=new
-[2026-04-04T07:56:39.821Z] LEAD: StatusTest (+7 111 222 33 44) type=status-test status=new
-[2026-04-04T07:56:39.835Z] LEAD: PatchTest (+7 222 333 44 55) type=patch-test status=new
-[2026-04-04T07:56:39.901Z] LEAD STATUS: 1775289399823 -> in_progress
-[2026-04-04T07:56:39.960Z] CONTENT UPDATE: company_name
-[2026-04-04T07:56:39.983Z] CONTENT UPDATE: company_name
-[2026-04-04T07:56:39.999Z] CONTENT ROLLBACK to version 0
-[2026-04-04T07:56:40.017Z] LEAD: Spam0 (+7 000 000 00 00) type=ratelimit status=new
-[2026-04-04T07:56:40.021Z] LEAD: Spam1 (+7 000 000 00 01) type=ratelimit status=new
-[2026-04-04T07:56:40.036Z] LEAD: Spam2 (+7 000 000 00 02) type=ratelimit status=new
-[2026-04-04T07:56:40.039Z] LEAD: Spam3 (+7 000 000 00 03) type=ratelimit status=new
+[2026-04-15T21:44:50.288Z] LEAD: LogTest (+7 000 111 22 33) type=log-test status=new
+[2026-04-15T21:44:50.290Z] LEAD: StatusTest (+7 111 222 33 44) type=status-test status=new
+[2026-04-15T21:44:50.292Z] LEAD: PatchTest (+7 222 333 44 55) type=patch-test status=new
+[2026-04-15T21:44:50.295Z] LEAD STATUS: 1776289490292 -> in_progress
+[2026-04-15T21:44:50.305Z] CONTENT UPDATE: company_name
+[2026-04-15T21:44:50.310Z] CONTENT UPDATE: company_name
+[2026-04-15T21:44:50.312Z] CONTENT ROLLBACK to version 0
+[2026-04-15T21:44:50.316Z] LEAD: Spam0 (+7 000 000 00 00) type=ratelimit status=new
+[2026-04-15T21:44:50.317Z] LEAD: Spam1 (+7 000 000 00 01) type=ratelimit status=new
+[2026-04-15T21:44:50.319Z] LEAD: Spam2 (+7 000 000 00 02) type=ratelimit status=new
+[2026-04-15T21:44:50.321Z] LEAD: Spam3 (+7 000 000 00 03) type=ratelimit status=new
+[2026-04-15T21:44:50.324Z] LEAD: StatsLead (+7 333 000 00 01) type=statstest status=new
+[2026-04-15T21:44:50.328Z] LEAD: Bulk1 (+7 444 001 00 01) type=bulk1 status=new
+[2026-04-15T21:44:50.330Z] LEAD: Bulk2 (+7 444 001 00 02) type=bulk2 status=new
+[2026-04-15T21:44:50.332Z] BULK DELETE: 2 leads
+[2026-04-15T21:44:50.335Z] LEAD: BulkSt1 (+7 555 001 00 01) type=bulkst1 status=new
+[2026-04-15T21:44:50.336Z] LEAD: BulkSt2 (+7 555 001 00 02) type=bulkst2 status=new
+[2026-04-15T21:44:50.338Z] BULK STATUS: 2 leads -> completed
+[2026-04-15T21:44:50.344Z] UPLOAD: 1776289490344-test.jpg (10 bytes)

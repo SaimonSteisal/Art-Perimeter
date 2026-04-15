@@ -3,14 +3,42 @@ const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 
+const ENV_FILE = path.join(__dirname, '.env');
+function loadEnv() {
+  if (!fs.existsSync(ENV_FILE)) return;
+  const content = fs.readFileSync(ENV_FILE, 'utf8');
+  content.split('\n').forEach(line => {
+    const match = line.match(/^(\w+)=(.*)$/);
+    if (match) process.env[match[1]] = match[2];
+  });
+}
+loadEnv();
+
 const app = express();
-const PORT = 3000;
-const LOG_FILE = path.join(__dirname, 'logs.txt');
+const PORT = process.env.PORT || 3000;
+const LOG_FILE = path.join(__dirname, process.env.LOG_FILE || 'logs.txt');
 
 function logToFile(message) {
   const timestamp = new Date().toISOString();
   const line = `[${timestamp}] ${message}\n`;
   fs.appendFileSync(LOG_FILE, line);
+  rotateLogIfNeeded();
+}
+
+function rotateLogIfNeeded() {
+  try {
+    if (!fs.existsSync(LOG_FILE)) return;
+    const stats = fs.statSync(LOG_FILE);
+    const MAX_LOG_SIZE = 1024 * 1024;
+    if (stats.size > MAX_LOG_SIZE) {
+      const date = new Date().toISOString().split('T')[0];
+      const archivePath = LOG_FILE.replace('.txt', `_${date}.txt`);
+      fs.renameSync(LOG_FILE, archivePath);
+      logToFile('Log rotated');
+    }
+  } catch (err) {
+    console.error('Log rotation error:', err.message);
+  }
 }
 
 app.use(cors());
@@ -18,28 +46,43 @@ app.use(express.json({ limit: '10mb' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
 const DB_FILE = path.join(__dirname, 'db.json');
-const ADMIN_PASSWORD = 'admin123';
-const ADMIN_TOKEN_SECRET = 'super-secret-token-123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || 'super-secret-token-123-change-me';
 const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
+const crypto = require('crypto');
 
 function generateToken() {
-  return JSON.stringify({ secret: ADMIN_TOKEN_SECRET, issued: Date.now() });
+  const issued = Date.now();
+  const payload = `${issued}.${ADMIN_TOKEN_SECRET}`;
+  const signature = crypto.createHmac('sha256', ADMIN_TOKEN_SECRET).update(payload).digest('hex');
+  return Buffer.from(JSON.stringify({ i: issued, s: signature })).toString('base64');
 }
 
 function validateToken(token) {
   try {
-    const parsed = JSON.parse(token);
-    if (parsed.secret !== ADMIN_TOKEN_SECRET) return false;
-    if (Date.now() - parsed.issued > TOKEN_EXPIRY_MS) return false;
-    return true;
+    const parsed = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+    const issued = parsed.i;
+    const signature = parsed.s;
+    if (!issued || !signature) return false;
+    if (Date.now() - issued > TOKEN_EXPIRY_MS) return false;
+    const payload = `${issued}.${ADMIN_TOKEN_SECRET}`;
+    const expectedSig = crypto.createHmac('sha256', ADMIN_TOKEN_SECRET).update(payload).digest('hex');
+    return signature === expectedSig;
   } catch {
     return false;
   }
 }
 
-function sanitizeInput(str) {
+function sanitizeInput(str, depth = 0) {
+  if (depth > MAX_DEPTH) return '[max depth reached]';
   if (typeof str !== 'string') return str;
+  if (str.length > MAX_STRING_LENGTH) return str.substring(0, MAX_STRING_LENGTH);
   return str.replace(/<[^>]*>/g, '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
@@ -292,8 +335,14 @@ app.post('/api/leads', (req, res) => {
     if (isRateLimited(ip)) {
       return res.status(429).json({ error: 'Слишком много запросов. Подождите минуту.' });
     }
+    if (db.leads.length >= 1000) {
+      return res.status(429).json({ error: 'Достигнут лимит заявок. Свяжитесь с администратором.' });
+    }
     const db = readDb();
     const sanitized = sanitizeObject(req.body);
+    if (!sanitized.name || !sanitized.phone) {
+      return res.status(400).json({ error: 'Укажите имя и телефон' });
+    }
     const newLead = {
       id: Date.now().toString(),
       timestamp: Date.now(),
@@ -326,6 +375,23 @@ function isRateLimited(ip) {
 function resetRateLimits() {
   rateLimitMap.clear();
 }
+
+setInterval(() => {
+  const now = Date.now();
+  const window = 60 * 1000;
+  for (const [ip, timestamps] of rateLimitMap.entries()) {
+    const valid = timestamps.filter(t => now - t < window);
+    if (valid.length === 0) {
+      rateLimitMap.delete(ip);
+    } else {
+      rateLimitMap.set(ip, valid);
+    }
+  }
+}, 5 * 60 * 1000);
+
+const MAX_STRING_LENGTH = 5000;
+const MAX_ARRAY_ITEMS = 100;
+const MAX_DEPTH = 10;
 
 app.patch('/api/leads/:id/status', (req, res) => {
   const { token } = req.query;
@@ -433,21 +499,40 @@ app.post('/api/save', (req, res) => {
     return res.status(403).json({ error: 'Доступ запрещён' });
   }
 
+  if (!newContent || typeof newContent !== 'object') {
+    return res.status(400).json({ error: 'Укажите newContent' });
+  }
+
+  const allowedFields = [
+    'site_title', 'company_name', 'phone_main', 'phone_secondary', 'email', 'address', 'hours',
+    'hero_subtitle', 'hero_title', 'hero_description', 'hero_cta_text', 'hero_cta_link', 'hero_bg',
+    'calc_title', 'calc_subtitle', 'calc_delivery_fee', 'calc_discount_threshold', 'calc_discount_percent',
+    'services_title', 'services_desc', 'portfolio_title', 'portfolio_subtitle',
+    'contacts_title', 'contacts_subtitle', 'contacts_desc', 'contacts_form_title', 'contacts_form_consent', 'contacts_form_submit',
+    'footer_text', 'footer_privacy'
+  ];
+  const filtered = {};
+  for (const [key, value] of Object.entries(newContent)) {
+    if (allowedFields.includes(key) && typeof value === 'string') {
+      filtered[key] = value;
+    }
+  }
+
   try {
     const db = readDb();
     const oldContent = JSON.parse(JSON.stringify(db.content));
-    db.content = { ...db.content, ...sanitizeObject(newContent) };
+    db.content = { ...db.content, ...sanitizeObject(filtered) };
     if (!db.contentHistory) db.contentHistory = [];
     db.contentHistory.unshift({
       timestamp: Date.now(),
       date: new Date().toLocaleString('ru-RU'),
-      changes: Object.keys(newContent),
+      changes: Object.keys(filtered),
       snapshot: oldContent
     });
     if (db.contentHistory.length > 20) db.contentHistory = db.contentHistory.slice(0, 20);
     writeDb(db);
     console.log('✅ Контент обновлён');
-    logToFile(`CONTENT UPDATE: ${Object.keys(newContent).join(', ')}`);
+    logToFile(`CONTENT UPDATE: ${Object.keys(filtered).join(', ')}`);
     res.json({ success: true });
   } catch (err) {
     logToFile(`ERROR saving content: ${err.message}`);
@@ -490,6 +575,172 @@ app.post('/api/content/rollback', (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Ошибка отката' });
+  }
+});
+
+app.get('/api/stats', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const leads = db.leads || [];
+    const statusCounts = { new: 0, in_progress: 0, completed: 0, rejected: 0 };
+    let totalRevenue = 0;
+    leads.forEach(lead => {
+      const s = lead.status || 'new';
+      if (statusCounts[s] !== undefined) statusCounts[s]++;
+      else statusCounts.new++;
+      if (lead.details && lead.details.total) {
+        totalRevenue += Number(lead.details.total) || 0;
+      }
+    });
+    const now = Date.now();
+    const oneDayAgo = now - 24 * 60 * 60 * 1000;
+    const newLeads24h = leads.filter(l => l.timestamp > oneDayAgo).length;
+    res.json({
+      totalLeads: leads.length,
+      newLeads: statusCounts.new,
+      inProgress: statusCounts.in_progress,
+      completed: statusCounts.completed,
+      rejected: statusCounts.rejected,
+      newLeads24h,
+      totalRevenue,
+      leadsByStatus: statusCounts
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось получить статистику' });
+  }
+});
+
+app.post('/api/leads/bulk-delete', (req, res) => {
+  const { token, ids } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Укажите массив ID для удаления' });
+  }
+  try {
+    const db = readDb();
+    const originalCount = db.leads.length;
+    db.leads = db.leads.filter(lead => !ids.includes(lead.id));
+    const deleted = originalCount - db.leads.length;
+    writeDb(db);
+    logToFile(`BULK DELETE: ${deleted} leads`);
+    res.json({ success: true, deleted });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка массового удаления' });
+  }
+});
+
+app.post('/api/leads/bulk-status', (req, res) => {
+  const { token, ids, status } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  const validStatuses = ['new', 'in_progress', 'completed', 'rejected'];
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Укажите массив ID' });
+  }
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Недопустимый статус: ${validStatuses.join(', ')}` });
+  }
+  try {
+    const db = readDb();
+    let updated = 0;
+    ids.forEach(id => {
+      const lead = db.leads.find(l => l.id === id);
+      if (lead) {
+        lead.status = status;
+        lead.statusUpdatedAt = new Date().toLocaleString('ru-RU');
+        updated++;
+      }
+    });
+    writeDb(db);
+    logToFile(`BULK STATUS: ${ids.length} leads -> ${status}`);
+    res.json({ success: true, updated });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка массового обновления' });
+  }
+});
+
+app.get('/api/preview', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const { newContent } = req.query;
+    if (!newContent) {
+      return res.status(400).json({ error: 'Укажите newContent' });
+    }
+    const parsed = JSON.parse(decodeURIComponent(newContent));
+    const preview = { ...db.content, ...sanitizeObject(parsed) };
+    res.json({ preview });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка генерации превью' });
+  }
+});
+
+app.post('/api/upload', (req, res) => {
+  const { token, filename, data } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  if (!filename || !data) {
+    return res.status(400).json({ error: 'Укажите filename и data (base64)' });
+  }
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const ext = path.extname(filename).toLowerCase();
+  if (!allowedExts.includes(ext)) {
+    return res.status(400).json({ error: 'Недопустимый тип файла. Разрешены: jpg, jpeg, png, gif, webp' });
+  }
+  try {
+    const buffer = Buffer.from(data, 'base64');
+    if (buffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Файл слишком большой (макс. 5MB)' });
+    }
+    const uniqueName = `${Date.now()}-${filename}`;
+    const filePath = path.join(UPLOADS_DIR, uniqueName);
+    fs.writeFileSync(filePath, buffer);
+    logToFile(`UPLOAD: ${uniqueName} (${buffer.length} bytes)`);
+    res.json({ success: true, url: `/uploads/${uniqueName}`, filename: uniqueName });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка загрузки файла' });
+  }
+});
+
+app.use('/uploads', express.static(UPLOADS_DIR));
+
+const startTime = Date.now();
+
+app.get('/api/health', (req, res) => {
+  try {
+    const memUsage = process.memoryUsage();
+    const uptime = Date.now() - startTime;
+    let dbStatus = 'ok';
+    let logSize = 0;
+    try {
+      if (fs.existsSync(DB_FILE)) dbStatus = 'ok';
+      if (fs.existsSync(LOG_FILE)) logSize = fs.statSync(LOG_FILE).size;
+    } catch (e) { dbStatus = 'error'; }
+    res.json({
+      status: 'ok',
+      uptime: Math.round(uptime),
+      uptimeFormatted: `${Math.floor(uptime / 60000)}m`,
+      memory: {
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024) + 'MB',
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024) + 'MB',
+        rss: Math.round(memUsage.rss / 1024 / 1024) + 'MB'
+      },
+      dbStatus,
+      logSize
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
   }
 });
 
@@ -564,7 +815,7 @@ app.use((err, req, res, next) => {
 
 function startServer() {
   initDb();
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════╗
 ║  🚀 Сервер запущен!                        ║
@@ -575,8 +826,23 @@ function startServer() {
 ║  🔑 Пароль:   ${ADMIN_PASSWORD}                 ║
 ║  💾 База:     db.json                       ║
 ╚════════════════════════════════════════════╝
-  `);
+    `);
   });
+
+  function gracefulShutdown(signal) {
+    console.log(`\n📡 Получен сигнал ${signal}. Завершаем работу...`);
+    server.close(() => {
+      console.log('✅ Сервер остановлен');
+      process.exit(0);
+    });
+    setTimeout(() => {
+      console.log('⚠️ Принудительная остановка');
+      process.exit(1);
+    }, 5000);
+  }
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 if (require.main === module) {

@@ -787,3 +787,126 @@ test('Rate limiting — блокирует после 5 запросов за м
   assert.strictEqual(res.status, 429);
   assert.ok(res.body.error);
 });
+
+// ==================== PHASE 8: ADMIN DASHBOARD ENHANCEMENT ====================
+
+test('GET /api/stats — возвращает статистику', async () => {
+  resetRateLimits();
+  await request('POST', '/api/leads', { type: 'statstest', name: 'StatsLead', phone: '+7 333 000 00 01', details: { total: 150000 } });
+  const token = await getValidToken();
+  const res = await request('GET', `/api/stats?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.totalLeads !== undefined);
+  assert.ok(res.body.totalRevenue !== undefined);
+  assert.ok(res.body.leadsByStatus);
+});
+
+test('GET /api/stats — без токена 403', async () => {
+  const res = await request('GET', '/api/stats');
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/leads/bulk-delete — удаляет несколько заявок', async () => {
+  resetRateLimits();
+  const r1 = await request('POST', '/api/leads', { type: 'bulk1', name: 'Bulk1', phone: '+7 444 001 00 01' });
+  const r2 = await request('POST', '/api/leads', { type: 'bulk2', name: 'Bulk2', phone: '+7 444 001 00 02' });
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-delete', { token, ids: [r1.body.id, r2.body.id] });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.deleted, 2);
+});
+
+test('POST /api/leads/bulk-delete — без токена 403', async () => {
+  const res = await request('POST', '/api/leads/bulk-delete', { ids: ['fake'] });
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/leads/bulk-status — обновляет статус нескольких заявок', async () => {
+  resetRateLimits();
+  const r1 = await request('POST', '/api/leads', { type: 'bulkst1', name: 'BulkSt1', phone: '+7 555 001 00 01' });
+  const r2 = await request('POST', '/api/leads', { type: 'bulkst2', name: 'BulkSt2', phone: '+7 555 001 00 02' });
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-status', { token, ids: [r1.body.id, r2.body.id], status: 'completed' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.updated, 2);
+});
+
+test('POST /api/leads/bulk-status — недопустимый статус 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-status', { token, ids: ['fake'], status: 'invalid' });
+  assert.strictEqual(res.status, 400);
+});
+
+test('GET /api/preview — возвращает превью контента', async () => {
+  const token = await getValidToken();
+  const newContent = encodeURIComponent(JSON.stringify({ company_name: 'Preview Company' }));
+  const res = await request('GET', `/api/preview?token=${encodeURIComponent(token)}&newContent=${newContent}`);
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.preview);
+  assert.strictEqual(res.body.preview.company_name, 'Preview Company');
+});
+
+test('GET /api/preview — без токена 403', async () => {
+  const res = await request('GET', '/api/preview');
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/upload — загружает файл', async () => {
+  const token = await getValidToken();
+  const base64Data = Buffer.from('test image').toString('base64');
+  const res = await request('POST', '/api/upload', { token, filename: 'test.jpg', data: base64Data });
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.url);
+  assert.ok(res.body.url.startsWith('/uploads/'));
+});
+
+test('POST /api/upload — слишком большой файл 400', async () => {
+  const token = await getValidToken();
+  const largeData = Buffer.alloc(6 * 1024 * 1024).toString('base64');
+  const res = await request('POST', '/api/upload', { token, filename: 'big.jpg', data: largeData });
+  assert.strictEqual(res.status, 400);
+  assert.ok(res.body.error.includes('большой'));
+});
+
+test('POST /api/upload — недопустимый тип 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', '/api/upload', { token, filename: 'test.exe', data: 'AAAA' });
+  assert.strictEqual(res.status, 400);
+  assert.ok(res.body.error.includes('Недопустимый тип'));
+});
+
+test('POST /api/upload — без токена 403', async () => {
+  const res = await request('POST', '/api/upload', { filename: 'test.jpg', data: 'AAAA' });
+  assert.strictEqual(res.status, 403);
+});
+
+// ==================== PHASE 9: PRODUCTION HARDENING ====================
+
+test('GET /api/health — возвращает статус сервера', async () => {
+  const res = await request('GET', '/api/health');
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.status, 'ok');
+  assert.ok(res.body.uptime !== undefined);
+  assert.ok(res.body.memory);
+  assert.ok(res.body.dbStatus);
+});
+
+test('GET /api/health — содержит memory usage', async () => {
+  const res = await request('GET', '/api/health');
+  assert.ok(res.body.memory.heapUsed);
+  assert.ok(res.body.memory.heapTotal);
+  assert.ok(res.body.memory.rss);
+});
+
+test('.env файл загружается', async () => {
+  const res = await request('GET', '/api/health');
+  assert.strictEqual(res.status, 200);
+});
+
+// ==================== FINAL VERIFICATION ====================
+
+test('GET /api/data — all endpoints still work', async () => {
+  const res = await request('GET', '/api/data');
+  assert.strictEqual(res.status, 200);
+  assert.ok(res.body.site_title);
+});

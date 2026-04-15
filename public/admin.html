@@ -35,6 +35,7 @@
         .lead-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; }
         .lead-phone { color: #2e7d32; font-weight: 600; margin-bottom: 8px; }
         .lead-date { font-size: 0.8rem; color: #666; }
+        .filter-btn.active { background: #2e7d32 !important; color: white !important; border-color: #2e7d32 !important; }
 
         .login-form { max-width: 400px; margin: 100px auto; text-align: center; }
         .login-form input { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; }
@@ -92,13 +93,53 @@
                     <div class="form-group"><label>Фон (URL)</label><input type="text" id="edit-hero-bg"></div>
                 </div>
 
+                <div class="card">
+                    <h2>🧮 Калькулятор</h2>
+                    <div class="form-group"><label>Заголовок</label><input type="text" id="edit-calc-title"></div>
+                    <div class="form-group"><label>Подзаголовок</label><input type="text" id="edit-calc-subtitle"></div>
+                </div>
+
+                <div class="card">
+                    <h2>🛠️ Услуги</h2>
+                    <div class="form-group"><label>Заголовок</label><input type="text" id="edit-services-title"></div>
+                    <div class="form-group"><label>Описание</label><textarea id="edit-services-desc" rows="2"></textarea></div>
+                </div>
+
+                <div class="card">
+                    <h2>📞 Контакты</h2>
+                    <div class="form-group"><label>Заголовок</label><input type="text" id="edit-contacts-title"></div>
+                    <div class="form-group"><label>Описание</label><textarea id="edit-contacts-desc" rows="2"></textarea></div>
+                </div>
+
+                <div class="card">
+                    <h2>⚓ Подвал</h2>
+                    <div class="form-group"><label>Текст копирайта</label><input type="text" id="edit-footer"></div>
+                </div>
+
                 <button class="btn-save" onclick="Admin.saveContent()">💾 Сохранить изменения</button>
                 <a href="index.html" target="_blank" class="btn-back" style="display:inline-block;margin-top:15px;">🌐 Открыть сайт</a>
             </div>
 
             <div id="leads-tab" class="tab-content">
                 <div class="card">
-                    <h2>📩 Входящие заявки (CRM)</h2>
+                    <h2>📊 Статистика</h2>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:15px;margin-bottom:25px;">
+                        <div style="background:#e8f5e9;padding:15px;border-radius:8px;text-align:center;"><div style="font-size:1.5rem;font-weight:bold;color:#2e7d32;" id="stat-total">0</div><div style="font-size:0.8rem;color:#666;">Всего</div></div>
+                        <div style="background:#fff3e0;padding:15px;border-radius:8px;text-align:center;"><div style="font-size:1.5rem;font-weight:bold;color:#e65100;" id="stat-new">0</div><div style="font-size:0.8rem;color:#666;">Новые</div></div>
+                        <div style="background:#e3f2fd;padding:15px;border-radius:8px;text-align:center;"><div style="font-size:1.5rem;font-weight:bold;color:#1565c0;" id="stat-progress">0</div><div style="font-size:0.8rem;color:#666;">В работе</div></div>
+                        <div style="background:#e8f5e9;padding:15px;border-radius:8px;text-align:center;"><div style="font-size:1.5rem;font-weight:bold;color:#2e7d32;" id="stat-completed">0</div><div style="font-size:0.8rem;color:#666;">Выполнены</div></div>
+                        <div style="background:#fce4ec;padding:15px;border-radius:8px;text-align:center;"><div style="font-size:1.5rem;font-weight:bold;#ad1457;" id="stat-24h">0</div><div style="font-size:0.8rem;color:#666;">За 24ч</div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>📩 Заявки <span id="leads-count" style="color:#666;font-weight:normal;font-size:0.9rem;">0</span></h2>
+                    <div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="filter-btn active" data-status="all" onclick="Admin.setFilter('all')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#2e7d32;color:white;border-color:#2e7d32;">Все</button>
+                        <button class="filter-btn" data-status="new" onclick="Admin.setFilter('new')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">🆕 Новые</button>
+                        <button class="filter-btn" data-status="in_progress" onclick="Admin.setFilter('in_progress')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">🔄 В работе</button>
+                        <button class="filter-btn" data-status="completed" onclick="Admin.setFilter('completed')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">✅ Выполнены</button>
+                        <button class="filter-btn" data-status="rejected" onclick="Admin.setFilter('rejected')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">❌ Отклонены</button>
+                    </div>
                     <div id="leads-list" class="leads-list"></div>
                 </div>
             </div>
