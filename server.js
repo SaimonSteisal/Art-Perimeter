@@ -1,10 +1,11 @@
+require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
 
 function logToFile(message) {
@@ -19,8 +20,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 const DB_FILE = path.join(__dirname, 'db.json');
-const ADMIN_PASSWORD = 'admin123';
-const ADMIN_TOKEN_SECRET = 'super-secret-token-123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_TOKEN_SECRET = process.env.TOKEN_SECRET || 'super-secret-token-123';
 const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 function generateToken() {
