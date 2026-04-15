@@ -2,10 +2,37 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const multer = require('multer');
 
 const app = express();
 const PORT = 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOADS_DIR),
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Недопустимый тип файла. Разрешены: JPEG, PNG, GIF, WebP'));
+    }
+  }
+});
 
 function logToFile(message) {
   const timestamp = new Date().toISOString();
@@ -17,6 +44,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 const DB_FILE = path.join(__dirname, 'db.json');
 const ADMIN_PASSWORD = 'admin123';
@@ -414,6 +442,31 @@ app.post('/api/portfolio', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Не удалось добавить в портфолио' });
   }
+});
+
+app.post('/api/upload', upload.single('file'), (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  if (!req.file) {
+    return res.status(400).json({ error: 'Файл не загружен' });
+  }
+  const fileUrl = '/uploads/' + req.file.filename;
+  console.log(`📁 Файл загружен: ${req.file.originalname} -> ${req.file.filename}`);
+  logToFile(`UPLOAD: ${req.file.originalname} (${req.file.size} bytes)`);
+  res.json({ success: true, url: fileUrl, filename: req.file.filename, size: req.file.size });
+}, (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'Превышен максимальный размер файла (5MB)' });
+    }
+    return res.status(400).json({ error: err.message });
+  }
+  if (err) {
+    return res.status(400).json({ error: err.message });
+  }
+  next();
 });
 
 app.post('/api/login', (req, res) => {
