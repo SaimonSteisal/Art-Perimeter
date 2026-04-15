@@ -10,6 +10,39 @@ const LOG_FILE = path.join(__dirname, 'logs.txt');
 function logToFile(message) {
   const timestamp = new Date().toISOString();
   const line = `[${timestamp}] ${message}\n`;
+
+  // Check if log file needs rotation (1MB = 1048576 bytes)
+  const MAX_LOG_SIZE = 1048576;
+  if (fs.existsSync(LOG_FILE)) {
+    const stats = fs.statSync(LOG_FILE);
+    if (stats.size > MAX_LOG_SIZE) {
+      // Archive current log file
+      const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const archiveFile = path.join(__dirname, `logs_${dateStr}.txt`);
+      fs.renameSync(LOG_FILE, archiveFile);
+      console.log(`📦 Log rotated: archived to ${archiveFile}`);
+
+      // Clean up old archives (keep only last 10)
+      const logDir = __dirname;
+      const archivePattern = /^logs_\d{4}-\d{2}-\d{2}\.txt$/;
+      const archives = fs.readdirSync(logDir)
+        .filter(file => archivePattern.test(file))
+        .map(file => ({
+          name: file,
+          path: path.join(logDir, file),
+          mtime: fs.statSync(path.join(logDir, file)).mtime
+        }))
+        .sort((a, b) => b.mtime - a.mtime); // Most recent first
+
+      if (archives.length > 10) {
+        archives.slice(10).forEach(archive => {
+          fs.unlinkSync(archive.path);
+          console.log(`🗑️ Removed old log archive: ${archive.name}`);
+        });
+      }
+    }
+  }
+
   fs.appendFileSync(LOG_FILE, line);
 }
 
