@@ -6,6 +6,7 @@ const cors = require('cors');
 const app = express();
 const PORT = 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
+const SERVER_START_TIME = Date.now();
 
 function logToFile(message) {
   const timestamp = new Date().toISOString();
@@ -532,6 +533,59 @@ app.post('/api/calculate', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Ошибка расчёта' });
   }
+});
+
+app.get('/api/health', (req, res) => {
+  const uptimeMs = Date.now() - SERVER_START_TIME;
+  const uptimeSeconds = Math.floor(uptimeMs / 1000);
+  const uptimeMinutes = Math.floor(uptimeSeconds / 60);
+  const uptimeHours = Math.floor(uptimeMinutes / 60);
+  const uptimeDays = Math.floor(uptimeHours / 24);
+  const uptime = {
+    days: uptimeDays,
+    hours: uptimeHours % 24,
+    minutes: uptimeMinutes % 60,
+    seconds: uptimeSeconds % 60,
+    since: new Date(SERVER_START_TIME).toISOString()
+  };
+
+  const memoryUsage = process.memoryUsage();
+  const memUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+  const memTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
+
+  let dbStatus = { readable: false, writable: false, error: null };
+  try {
+    readDb();
+    dbStatus.readable = true;
+    dbStatus.writable = true;
+  } catch (err) {
+    dbStatus.error = err.message;
+  }
+
+  let logFileSize = 0;
+  try {
+    if (fs.existsSync(LOG_FILE)) {
+      const stats = fs.statSync(LOG_FILE);
+      logFileSize = stats.size;
+    }
+  } catch (err) {
+    logFileSize = 0;
+  }
+
+  res.json({
+    status: 'ok',
+    uptime,
+    memory: {
+      used: memUsedMB,
+      total: memTotalMB,
+      unit: 'MB'
+    },
+    database: dbStatus,
+    logFile: {
+      size: logFileSize,
+      unit: 'bytes'
+    }
+  });
 });
 
 // ==================== ROUTING FIX ====================
