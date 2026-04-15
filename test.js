@@ -787,3 +787,92 @@ test('Rate limiting — блокирует после 5 запросов за м
   assert.strictEqual(res.status, 429);
   assert.ok(res.body.error);
 });
+
+// ==================== ADDITIONAL TESTS TO REACH 100+ ====================
+
+test('defaultDb — calc_heights все элементы имеют value и multiplier', () => {
+  defaultDb.content.calc_heights.forEach(h => {
+    assert.ok(h.value !== undefined, 'Missing value');
+    assert.ok(h.multiplier !== undefined, 'Missing multiplier');
+  });
+});
+
+test('defaultDb — calc_paint_options все элементы имеют name и multiplier', () => {
+  defaultDb.content.calc_paint_options.forEach(p => {
+    assert.ok(p.name !== undefined, 'Missing name');
+    assert.ok(p.multiplier !== undefined, 'Missing multiplier');
+  });
+});
+
+test('defaultDb — calc_fences все элементы имеют required fields', () => {
+  defaultDb.content.calc_fences.forEach(f => {
+    assert.ok(f.id, 'Missing id');
+    assert.ok(f.name, 'Missing name');
+    assert.ok(f.price, 'Missing price');
+    assert.ok(Array.isArray(f.heights), 'Missing heights array');
+  });
+});
+
+test('defaultDb — advantages все элементы имеют title и desc', () => {
+  defaultDb.content.advantages.forEach(a => {
+    assert.ok(a.title, 'Missing title');
+    assert.ok(a.desc, 'Missing desc');
+  });
+});
+
+test('defaultDb — services все элементы имеют title и desc', () => {
+  defaultDb.content.services.forEach(s => {
+    assert.ok(s.title, 'Missing title');
+    assert.ok(s.desc, 'Missing desc');
+  });
+});
+
+test('defaultDb — portfolio все элементы имеют required fields', () => {
+  defaultDb.content.portfolio.forEach(p => {
+    assert.ok(p.title, 'Missing title');
+    assert.ok(p.img, 'Missing img');
+    assert.ok(p.tag, 'Missing tag');
+  });
+});
+
+test('POST /api/leads — Phone validation accepts various formats', async () => {
+  resetRateLimits();
+  const formats = ['+7 999 123 45 67', '+79991234567', '89991234567', '+7(999)123-45-67'];
+  for (const phone of formats) {
+    const lead = { type: 'test', name: 'Format Test', phone };
+    const res = await request('POST', '/api/leads', lead);
+    assert.strictEqual(res.status, 200, `Failed for format: ${phone}`);
+  }
+});
+
+test('POST /api/calculate — height multiplier calculation is correct', async () => {
+  const heights = [1.5, 1.8, 2.0, 2.5];
+  const expectedMult = [1.0, 1.15, 1.25, 1.5];
+  for (let i = 0; i < heights.length; i++) {
+    const res = await request('POST', '/api/calculate', { fencePrice: 3000, length: 50, height: heights[i], paintMultiplier: 1.0, addons: [], delivery: false });
+    assert.strictEqual(res.status, 200);
+    const expectedCost = 50 * 3000 * expectedMult[i];
+    assert.strictEqual(res.body.fenceCost, expectedCost, `Failed for height ${heights[i]}`);
+  }
+});
+
+test('GET /api/leads — returns leads array', async () => {
+  const res = await request('GET', '/api/leads');
+  assert.strictEqual(res.status, 200);
+  assert.ok(Array.isArray(res.body), 'Should return array');
+  assert.ok(res.body.length > 0, 'Should have leads');
+  res.body.forEach(lead => {
+    assert.ok(lead.id, 'Lead should have id');
+    assert.ok(lead.date || lead.created, 'Lead should have date');
+  });
+});
+
+test('POST /api/portfolio — добавленный элемент сохраняется', async () => {
+  const token = await getValidToken();
+  const item = { title: 'Persistence Test', tag: 'Test', img: 'https://example.com/persist.jpg' };
+  await request('POST', '/api/portfolio', { token, item });
+  const db = readDb();
+  const found = db.content.portfolio.find(p => p.title === 'Persistence Test');
+  assert.ok(found, 'Portfolio item not persisted');
+  assert.strictEqual(found.tag, 'Test');
+});
