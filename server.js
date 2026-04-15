@@ -4,6 +4,7 @@ const path = require('path');
 const cors = require('cors');
 
 const app = express();
+let server = null;
 const PORT = 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
 
@@ -564,7 +565,7 @@ app.use((err, req, res, next) => {
 
 function startServer() {
   initDb();
-  app.listen(PORT, () => {
+  server = app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════╗
 ║  🚀 Сервер запущен!                        ║
@@ -575,12 +576,47 @@ function startServer() {
 ║  🔑 Пароль:   ${ADMIN_PASSWORD}                 ║
 ║  💾 База:     db.json                       ║
 ╚════════════════════════════════════════════╝
-  `);
+    `);
   });
+
+  let isShuttingDown = false;
+
+  function gracefulShutdown(signal) {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    console.log(`\n🛑 Получен ${signal}. Начинаю завершение работы...`);
+    logToFile(`SHUTDOWN: Received ${signal}, starting graceful shutdown`);
+
+    if (server) {
+      server.close((err) => {
+        if (err) {
+          console.error(`❌ Ошибка при закрытии сервера: ${err.message}`);
+          logToFile(`SHUTDOWN ERROR: ${err.message}`);
+          process.exit(1);
+        } else {
+          console.log('✅ Сервер остановлен');
+          logToFile('SHUTDOWN: Server closed successfully');
+          process.exit(0);
+        }
+      });
+    } else {
+      process.exit(0);
+    }
+
+    setTimeout(() => {
+      console.error('⚠️ Принудительное завершение (timeout)');
+      logToFile('SHUTDOWN: Forced exit due to timeout');
+      process.exit(1);
+    }, 10000);
+  }
+
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 }
 
 if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE };
+module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE, startServer };
