@@ -18,6 +18,20 @@ app.use(express.json({ limit: '10mb' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+const requestDurations = [];
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    requestDurations.push(duration);
+    if (requestDurations.length > 1000) {
+      requestDurations.shift();
+    }
+  });
+  next();
+});
+
 const DB_FILE = path.join(__dirname, 'db.json');
 const ADMIN_PASSWORD = 'admin123';
 const ADMIN_TOKEN_SECRET = 'super-secret-token-123';
@@ -568,6 +582,46 @@ app.post('/api/calculate', (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Ошибка расчёта' });
+  }
+});
+
+app.get('/api/stats', (req, res) => {
+  try {
+    const db = readDb();
+    const leads = db.leads || [];
+    
+    const leadsByStatus = {
+      new: 0,
+      in_progress: 0,
+      completed: 0,
+      rejected: 0
+    };
+    
+    let totalRevenue = 0;
+    
+    for (const lead of leads) {
+      if (lead.status && leadsByStatus.hasOwnProperty(lead.status)) {
+        leadsByStatus[lead.status]++;
+      }
+      
+      if (lead.calculatedPrice && typeof lead.calculatedPrice === 'number') {
+        totalRevenue += lead.calculatedPrice;
+      }
+    }
+    
+    let avgResponseTime = 0;
+    if (requestDurations.length > 0) {
+      const sum = requestDurations.reduce((a, b) => a + b, 0);
+      avgResponseTime = Math.round(sum / requestDurations.length);
+    }
+    
+    res.json({
+      leadsByStatus,
+      totalRevenue,
+      avgResponseTime
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось получить статистику' });
   }
 });
 
