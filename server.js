@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const cors = require('cors');
 
 const app = express();
@@ -471,6 +472,57 @@ app.get('/api/content/history', (req, res) => {
     res.json({ history });
   } catch (err) {
     res.status(500).json({ error: 'Не удалось получить историю' });
+  }
+});
+
+app.get('/api/health', (req, res) => {
+  try {
+    const uptimeSeconds = Math.floor((Date.now() - SERVER_START_TIME) / 1000);
+    const uptime = {
+      seconds: uptimeSeconds,
+      human: `${Math.floor(uptimeSeconds / 86400)}d ${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m ${uptimeSeconds % 60}s`
+    };
+    
+    const memUsage = process.memoryUsage();
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const memory = {
+      used: Math.round(memUsage.heapUsed / 1024 / 1024),
+      heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+      rss: Math.round(memUsage.rss / 1024 / 1024),
+      systemTotal: Math.round(totalMem / 1024 / 1024),
+      systemFree: Math.round(freeMem / 1024 / 1024)
+    };
+    
+    let dbStatus = { readable: false, writable: false };
+    try {
+      readDb();
+      dbStatus.readable = true;
+      dbStatus.writable = true;
+    } catch (e) {
+      dbStatus.error = e.message;
+    }
+    
+    let logSize = 0;
+    try {
+      if (fs.existsSync(LOG_FILE)) {
+        const stats = fs.statSync(LOG_FILE);
+        logSize = Math.round(stats.size / 1024);
+      }
+    } catch (e) {
+      logSize = -1;
+    }
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime,
+      memory,
+      database: dbStatus,
+      logFileSize: logSize
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
   }
 });
 
