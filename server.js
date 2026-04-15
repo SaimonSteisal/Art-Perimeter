@@ -493,6 +493,43 @@ app.post('/api/content/rollback', (req, res) => {
   }
 });
 
+app.get('/api/preview', (req, res) => {
+  const { token, changes, ...queryFields } = req.query;
+
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  try {
+    let contentChanges = {};
+    
+    if (changes) {
+      try {
+        contentChanges = JSON.parse(changes);
+      } catch {
+        return res.status(400).json({ error: 'Недопустимый формат изменений' });
+      }
+    } else {
+      for (const [key, value] of Object.entries(queryFields)) {
+        if (key !== 'token') {
+          contentChanges[key] = value;
+        }
+      }
+    }
+
+    const db = readDb();
+    const sanitizedPreview = sanitizeObject({ ...db.content, ...contentChanges });
+    
+    res.json({
+      success: true,
+      preview: sanitizedPreview,
+      appliedChanges: Object.keys(contentChanges)
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось создать превью' });
+  }
+});
+
 app.post('/api/calculate', (req, res) => {
   try {
     const { fencePrice, length, height, paintMultiplier, addons, delivery } = req.body;
