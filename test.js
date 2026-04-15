@@ -50,6 +50,7 @@ test.before(async () => {
   // Reset db to default for tests
   if (fs.existsSync(DB_FILE)) fs.unlinkSync(DB_FILE);
   initDb();
+  resetRateLimits();
   server = app.listen(TEST_PORT);
   // Wait for server to start
   await new Promise(resolve => setTimeout(resolve, 100));
@@ -74,6 +75,7 @@ test('GET /api/data — возвращает контент', async () => {
 });
 
 test('POST /api/leads — создаёт заявку', async () => {
+  resetRateLimits();
   const lead = { type: 'calc', name: 'Тест', phone: '+7 999 123 45 67' };
   const res = await request('POST', '/api/leads', lead);
   assert.strictEqual(res.status, 200);
@@ -82,6 +84,7 @@ test('POST /api/leads — создаёт заявку', async () => {
 });
 
 test('POST /api/leads — заявка сохраняется в БД', async () => {
+  resetRateLimits();
   const lead = { type: 'contact', name: 'Иван', phone: '+7 999 111 22 33' };
   await request('POST', '/api/leads', lead);
   const db = readDb();
@@ -90,6 +93,7 @@ test('POST /api/leads — заявка сохраняется в БД', async ()
 });
 
 test('GET /api/leads — возвращает список заявок', async () => {
+  resetRateLimits();
   const res = await request('GET', '/api/leads');
   assert.strictEqual(res.status, 200);
   assert.ok(Array.isArray(res.body));
@@ -101,9 +105,9 @@ test('POST /api/login — верный пароль', async () => {
   assert.strictEqual(res.status, 200);
   assert.strictEqual(res.body.success, true);
   assert.ok(res.body.token);
-  const parsed = JSON.parse(res.body.token);
-  assert.strictEqual(parsed.secret, 'super-secret-token-123');
-  assert.ok(parsed.issued);
+  const parsed = JSON.parse(Buffer.from(res.body.token, 'base64').toString('utf8'));
+  assert.ok(parsed.s);
+  assert.ok(parsed.i);
 });
 
 test('POST /api/login — неверный пароль', async () => {
@@ -468,15 +472,17 @@ test('generateToken — создаёт валидный токен', () => {
 
 test('validateToken — отклоняет неверный токен', () => {
   assert.strictEqual(validateToken('bad-token'), false);
-  assert.strictEqual(validateToken('{"secret":"wrong","issued":' + Date.now() + '}'), false);
+  const badToken = Buffer.from(JSON.stringify({ i: Date.now(), s: 'wrong' })).toString('base64');
+  assert.strictEqual(validateToken(badToken), false);
 });
 
 test('validateToken — отклоняет просроченный токен', () => {
-  const expired = JSON.stringify({ secret: 'super-secret-token-123', issued: Date.now() - 25 * 60 * 60 * 1000 });
+  const expired = Buffer.from(JSON.stringify({ i: Date.now() - 25 * 60 * 60 * 1000, s: 'any' })).toString('base64');
   assert.strictEqual(validateToken(expired), false);
 });
 
 test('DELETE /api/leads/:id — удаляет заявку с токеном', async () => {
+  resetRateLimits();
   const lead = { type: 'test', name: 'Удали меня', phone: '+7 000 000 00 00' };
   const createRes = await request('POST', '/api/leads', lead);
   const leadId = createRes.body.id;
@@ -534,6 +540,7 @@ test('sanitizeObject — санитизирует вложенные строк�
 });
 
 test('POST /api/leads — санитизирует входные данные', async () => {
+  resetRateLimits();
   const lead = { type: 'calc', name: '<script>hack</script>', phone: '+7 999 000 00 00' };
   const res = await request('POST', '/api/leads', lead);
   assert.strictEqual(res.status, 200);
@@ -556,7 +563,7 @@ test('POST /api/login — неверный пароль 401', async () => {
 });
 
 test('POST /api/save — просроченный токен 403', async () => {
-  const expired = JSON.stringify({ secret: 'super-secret-token-123', issued: Date.now() - 25 * 60 * 60 * 1000 });
+  const expired = Buffer.from(JSON.stringify({ i: Date.now() - 25 * 60 * 60 * 1000, s: 'any' })).toString('base64');
   const res = await request('POST', '/api/save', { token: expired, newContent: {} });
   assert.strictEqual(res.status, 403);
 });
@@ -675,6 +682,7 @@ test('POST /api/login — response time < 50ms', async () => {
 });
 
 test('logs.txt — создаётся при записи заявки', async () => {
+  resetRateLimits();
   const logPath = path.join(__dirname, 'logs.txt');
   if (fs.existsSync(logPath)) fs.unlinkSync(logPath);
   const lead = { type: 'log-test', name: 'LogTest', phone: '+7 000 111 22 33' };

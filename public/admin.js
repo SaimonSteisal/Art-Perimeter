@@ -231,6 +231,17 @@ const Admin = (function() {
         }
     }
 
+    async function exportLeads() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) return alert('Сессия истекла');
+        window.open(`/api/leads/export?token=${encodeURIComponent(token)}`, '_blank');
+    }
+
+    function refreshLeads() {
+        loadLeads();
+        loadStats();
+    }
+
     function getStatusBadge(s) {
         const badges = { new: '🆕', in_progress: '🔄', completed: '✅', rejected: '❌' };
         return badges[s] || '❓';

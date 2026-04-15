@@ -42,7 +42,19 @@ function rotateLogIfNeeded() {
 }
 
 app.use(cors());
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  next();
+});
 app.use(express.json({ limit: '10mb' }));
+
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Неверный формат JSON' });
+  }
+  next(err);
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -366,11 +378,12 @@ function isRateLimited(ip) {
   const now = Date.now();
   const window = 60 * 1000;
   const maxRequests = 5;
-  if (!rateLimitMap.has(ip)) rateLimitMap.set(ip, []);
+  if (!rateLimitMap.has(ip)) return false;
   const timestamps = rateLimitMap.get(ip).filter(t => now - t < window);
+  if (timestamps.length >= maxRequests) return true;
   timestamps.push(now);
   rateLimitMap.set(ip, timestamps);
-  return timestamps.length > maxRequests;
+  return false;
 }
 function resetRateLimits() {
   rateLimitMap.clear();
@@ -490,6 +503,15 @@ app.post('/api/login', (req, res) => {
   } else {
     res.status(401).json({ success: false, message: 'Неверный пароль' });
   }
+});
+
+app.get('/api/token/validate', (req, res) => {
+  const { token } = req.query;
+  if (!token) {
+    return res.status(400).json({ valid: false, error: 'Токен не передан' });
+  }
+  const isValid = validateToken(token);
+  res.json({ valid: isValid });
 });
 
 app.post('/api/save', (req, res) => {

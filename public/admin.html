@@ -133,12 +133,14 @@
                 </div>
                 <div class="card">
                     <h2>📩 Заявки <span id="leads-count" style="color:#666;font-weight:normal;font-size:0.9rem;">0</span></h2>
-                    <div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;">
+                    <div style="margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                         <button class="filter-btn active" data-status="all" onclick="Admin.setFilter('all')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#2e7d32;color:white;border-color:#2e7d32;">Все</button>
                         <button class="filter-btn" data-status="new" onclick="Admin.setFilter('new')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">🆕 Новые</button>
                         <button class="filter-btn" data-status="in_progress" onclick="Admin.setFilter('in_progress')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">🔄 В работе</button>
                         <button class="filter-btn" data-status="completed" onclick="Admin.setFilter('completed')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">✅ Выполнены</button>
                         <button class="filter-btn" data-status="rejected" onclick="Admin.setFilter('rejected')" style="padding:8px 16px;border:1px solid #ddd;border-radius:20px;cursor:pointer;background:#fff;">❌ Отклонены</button>
+                        <button onclick="Admin.exportLeads()" style="padding:8px 16px;background:#2196f3;color:white;border:none;border-radius:6px;cursor:pointer;margin-left:auto;">📥 CSV</button>
+                        <button onclick="Admin.refreshLeads()" style="padding:8px 16px;background:#ff9800;color:white;border:none;border-radius:6px;cursor:pointer;">🔄 Обновить</button>
                     </div>
                     <div id="leads-list" class="leads-list"></div>
                 </div>
