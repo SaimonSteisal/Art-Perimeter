@@ -6,8 +6,38 @@ const cors = require('cors');
 const app = express();
 const PORT = 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
+const LOG_DIR = __dirname;
+const LOG_MAX_SIZE = 1024 * 1024;
+const MAX_ARCHIVED_LOGS = 7;
+
+function rotateLogsIfNeeded() {
+  try {
+    if (!fs.existsSync(LOG_FILE)) return;
+    const stats = fs.statSync(LOG_FILE);
+    if (stats.size < LOG_MAX_SIZE) return;
+
+    const date = new Date().toISOString().split('T')[0];
+    const archiveName = `logs_${date}.txt`;
+    const archivePath = path.join(LOG_DIR, archiveName);
+
+    fs.renameSync(LOG_FILE, archivePath);
+    fs.writeFileSync(LOG_FILE, '');
+
+    const files = fs.readdirSync(LOG_DIR)
+      .filter(f => f.startsWith('logs_') && f.endsWith('.txt'))
+      .sort()
+      .reverse();
+    
+    files.slice(MAX_ARCHIVED_LOGS).forEach(f => {
+      fs.unlinkSync(path.join(LOG_DIR, f));
+    });
+  } catch (err) {
+    console.error('Log rotation error:', err);
+  }
+}
 
 function logToFile(message) {
+  rotateLogsIfNeeded();
   const timestamp = new Date().toISOString();
   const line = `[${timestamp}] ${message}\n`;
   fs.appendFileSync(LOG_FILE, line);
