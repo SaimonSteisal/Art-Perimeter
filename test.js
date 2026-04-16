@@ -3,7 +3,28 @@ const assert = require('node:assert');
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
-const { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, DB_FILE } = require('./server');
+
+// Make time/size-based features deterministic in tests.
+process.env.LOG_ROTATE_MAX_BYTES = process.env.LOG_ROTATE_MAX_BYTES || '1024';
+process.env.UPLOAD_MAX_BYTES = process.env.UPLOAD_MAX_BYTES || '2048';
+
+const {
+  app,
+  initDb,
+  readDb,
+  writeDb,
+  backupDb,
+  validateDb,
+  generateToken,
+  validateToken,
+  sanitizeInput,
+  sanitizeObject,
+  resetRateLimits,
+  defaultDb,
+  ADMIN_PASSWORD,
+  DB_FILE,
+  gracefulShutdown
+} = require('./server');
 
 const TEST_PORT = 3999;
 let server;
@@ -863,4 +884,167 @@ test('POST /api/leads/bulk-status — не массив ID 400', async () => {
   const token = await getValidToken();
   const res = await request('POST', `/api/leads/bulk-status?token=${encodeURIComponent(token)}`, { ids: 'not-array', status: 'completed' });
   assert.strictEqual(res.status, 400);
+});
+
+// ==================== PLAN VIEWER ====================
+
+test('GET /PLAN.md — отдаёт текст плана для admin/plan', async () => {
+  const res = await request('GET', '/PLAN.md');
+  assert.strictEqual(res.status, 200);
+  assert.ok(typeof res.body === 'string');
+  assert.ok(res.body.includes('# PLAN.md') || res.body.includes('Phase 1'));
+});
+
+// ==================== ADMIN STATS ====================
+
+test('GET /api/stats — возвращает статистику с токеном', async () => {
+  resetRateLimits();
+
+  const token = await getValidToken();
+
+  const dbBefore = readDb();
+  const leadsBefore = Array.isArray(dbBefore.leads) ? dbBefore.leads : [];
+
+  // Add deterministic sample leads, but compute expected values from DB after insert.
+  await request('POST', '/api/leads', { type: 'calc', name: 'StatsCalc1', phone: '+7 900 000 00 00', details: { total: 111 }, status: 'new' });
+  await request('POST', '/api/leads', { type: 'calc', name: 'StatsCalc2', phone: '+7 900 000 00 01', details: { total: 222 }, status: 'in_progress' });
+  await request('POST', '/api/leads', { type: 'contact', name: 'StatsContact1', phone: '+7 900 000 00 02', status: 'completed' });
+
+  const dbAfter = readDb();
+  const leadsAfter = Array.isArray(dbAfter.leads) ? dbAfter.leads : [];
+
+  const expected = { new: 0, in_progress: 0, completed: 0, rejected: 0 };
+  let expectedRevenue = 0;
+  leadsAfter.forEach(l => {
+    const status = l.status || 'new';
+    if (expected[status] === undefined) expected[status] = 0;
+    expected[status] += 1;
+
+    if (l.type === 'calc' && l.details && l.details.total != null) {
+      expectedRevenue += Number(l.details.total) || 0;
+    }
+  });
+
+  const res = await request('GET', `/api/stats?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 200);
+  assert.deepStrictEqual(res.body.leadsByStatus, expected);
+  assert.strictEqual(res.body.totalRevenue, Math.round(expectedRevenue));
+  assert.strictEqual(typeof res.body.avgResponseTimeMs, 'number');
+  assert.ok(res.body.avgResponseTimeMs >= 0);
+});
+
+test('GET /api/stats — без токена 403', async () => {
+  const res = await request('GET', '/api/stats');
+  assert.strictEqual(res.status, 403);
+});
+
+// ==================== CONTENT PREVIEW ====================
+
+test('GET /api/preview — возвращает превью и показывает применённые изменения', async () => {
+  const token = await getValidToken();
+
+  const res = await request('GET', `/api/preview?token=${encodeURIComponent(token)}&hero_title=${encodeURIComponent('<script>x</script>')}`);
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.preview.hero_title, 'x');
+  assert.ok(Array.isArray(res.body.appliedChanges));
+  assert.ok(res.body.appliedChanges.includes('hero_title'));
+});
+
+test('GET /api/preview — без токена 403', async () => {
+  const res = await request('GET', `/api/preview?hero_title=${encodeURIComponent('<script>x</script>')}`);
+  assert.strictEqual(res.status, 403);
+});
+
+// ==================== HEALTH CHECK ====================
+
+test('GET /api/health — возвращает согласованную структуру', async () => {
+  const res = await request('GET', '/api/health');
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.status, 'ok');
+  assert.ok(res.body.uptime);
+  assert.ok(res.body.uptime.human || typeof res.body.uptime.seconds === 'number');
+  assert.ok(res.body.memory);
+  assert.ok(res.body.database);
+  assert.ok(typeof res.body.logFileSize === 'number');
+});
+
+// ==================== UPLOAD (base64) ====================
+
+test('POST /api/upload — загрузка изображения (base64) с токеном', async () => {
+  const token = await getValidToken();
+  const buffer = Buffer.from('tiny-image-bytes');
+  const base64 = buffer.toString('base64');
+
+  const res = await request(
+    'POST',
+    `/api/upload?token=${encodeURIComponent(token)}`,
+    { filename: 'test.png', mimeType: 'image/png', base64 }
+  );
+
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.ok(res.body.url && res.body.url.startsWith('/uploads/'));
+  assert.ok(res.body.filename);
+  assert.strictEqual(res.body.size, buffer.length);
+
+  const savedPath = path.join(__dirname, 'uploads', res.body.filename);
+  assert.ok(fs.existsSync(savedPath), 'Uploaded file should exist on disk');
+});
+
+test('POST /api/upload — без токена 403', async () => {
+  const base64 = Buffer.from('x').toString('base64');
+  const res = await request('POST', '/api/upload', { filename: 'test.png', mimeType: 'image/png', base64 });
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/upload — превышение лимита возвращает 413', async () => {
+  const token = await getValidToken();
+  const maxBytes = parseInt(process.env.UPLOAD_MAX_BYTES || '2048', 10);
+  const buffer = Buffer.alloc(maxBytes + 1, 0xff);
+  const base64 = buffer.toString('base64');
+
+  const res = await request(
+    'POST',
+    `/api/upload?token=${encodeURIComponent(token)}`,
+    { filename: 'big.png', mimeType: 'image/png', base64 }
+  );
+
+  assert.strictEqual(res.status, 413);
+  assert.ok(res.body.error);
+});
+
+// ==================== LOG ROTATION ====================
+
+test('log rotation — когда logs.txt больше лимита, создаётся archive и logs.txt продолжает жить', async () => {
+  const logPath = path.join(__dirname, 'logs.txt');
+  const rotatedPath = path.join(__dirname, `logs_${new Date().toISOString().slice(0, 10)}.txt`);
+
+  const maxBytes = parseInt(process.env.LOG_ROTATE_MAX_BYTES || '1024', 10);
+
+  if (fs.existsSync(logPath)) fs.unlinkSync(logPath);
+  if (fs.existsSync(rotatedPath)) fs.unlinkSync(rotatedPath);
+
+  fs.writeFileSync(logPath, 'x'.repeat(maxBytes + 200), 'utf8');
+  resetRateLimits();
+
+  const lead = { type: 'log-rotation', name: 'RotateTest', phone: '+7 900 000 00 09' };
+  const res = await request('POST', '/api/leads', lead);
+  assert.strictEqual(res.status, 200);
+
+  assert.ok(fs.existsSync(logPath), 'logs.txt should exist after rotation');
+  assert.ok(fs.existsSync(rotatedPath), 'rotated archive file should exist');
+
+  const rotatedContent = fs.readFileSync(rotatedPath, 'utf8');
+  assert.ok(rotatedContent.includes('x'), 'rotated file should contain old log content');
+});
+
+// ==================== GRACEFUL SHUTDOWN ====================
+
+test('gracefulShutdown — корректно останавливает сервер', async () => {
+  const s = app.listen(0);
+  assert.ok(s.listening);
+
+  await gracefulShutdown(s, 'TEST');
+  assert.strictEqual(s.listening, false);
 });

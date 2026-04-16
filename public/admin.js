@@ -10,8 +10,20 @@ const Admin = (function() {
     let content = {};
     let leads = [];
 
+    function hasValidStoredToken() {
+        const raw = localStorage.getItem('adminToken');
+        if (!raw) return false;
+        try {
+            const parsed = JSON.parse(raw);
+            return parsed && parsed.secret === ADMIN_TOKEN;
+        } catch {
+            // Если токен хранится не в JSON-формате — считаем, что это невалидная сессия.
+            return false;
+        }
+    }
+
     function init() {
-        if (localStorage.getItem('adminToken') === ADMIN_TOKEN) {
+        if (hasValidStoredToken()) {
             showDashboard();
         }
     }

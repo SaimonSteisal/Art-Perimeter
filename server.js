@@ -10,7 +10,34 @@ const PORT = process.env.PORT || 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
 const SERVER_START_TIME = Date.now();
 
+const UPLOAD_DIR = path.join(__dirname, 'uploads');
+const UPLOAD_MAX_BYTES = parseInt(process.env.UPLOAD_MAX_BYTES || String(5 * 1024 * 1024), 10);
+if (!fs.existsSync(UPLOAD_DIR)) {
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+}
+
+const LOG_ROTATE_MAX_BYTES = parseInt(process.env.LOG_ROTATE_MAX_BYTES || String(1 * 1024 * 1024), 10);
+
+function rotateLogsIfNeeded() {
+  if (!fs.existsSync(LOG_FILE)) return;
+  try {
+    const stats = fs.statSync(LOG_FILE);
+    if (stats.size < LOG_ROTATE_MAX_BYTES) return;
+
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const rotatedPath = path.join(__dirname, `logs_${dateStr}.txt`);
+
+    // Append old logs into the archive, then start a fresh `logs.txt`.
+    const existing = fs.readFileSync(LOG_FILE, 'utf8');
+    fs.appendFileSync(rotatedPath, existing);
+    fs.unlinkSync(LOG_FILE);
+  } catch {
+    // Never break the main request flow because of log rotation.
+  }
+}
+
 function logToFile(message) {
+  rotateLogsIfNeeded();
   const timestamp = new Date().toISOString();
   const line = `[${timestamp}] ${message}\n`;
   fs.appendFileSync(LOG_FILE, line);
@@ -19,17 +46,40 @@ function logToFile(message) {
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Track API response times for the admin stats endpoint (in-memory).
+const apiTiming = { count: 0, totalMs: 0 };
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    if (req.path && req.path.startsWith('/api/')) {
+      apiTiming.count += 1;
+      apiTiming.totalMs += (Date.now() - start);
+    }
+  });
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const DB_FILE = path.join(__dirname, 'db.json');
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const ADMIN_TOKEN_SECRET = process.env.TOKEN_SECRET || 'super-secret-token-123';
 const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
+/**
+ * Generates an admin auth token string (JSON payload).
+ * @returns {string}
+ */
 function generateToken() {
   return JSON.stringify({ secret: ADMIN_TOKEN_SECRET, issued: Date.now() });
 }
 
+/**
+ * Validates a token created by {@link generateToken}.
+ * @param {string} token
+ * @returns {boolean}
+ */
 function validateToken(token) {
   try {
     const parsed = JSON.parse(token);
@@ -41,11 +91,21 @@ function validateToken(token) {
   }
 }
 
+/**
+ * Strips HTML tags and encodes a small set of entities to reduce XSS risk.
+ * @param {*} str
+ * @returns {*}
+ */
 function sanitizeInput(str) {
   if (typeof str !== 'string') return str;
   return str.replace(/<[^>]*>/g, '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/**
+ * Recursively sanitizes string fields within an object/array.
+ * @param {*} obj
+ * @returns {*}
+ */
 function sanitizeObject(obj) {
   if (!obj || typeof obj !== 'object') return obj;
   const result = {};
@@ -142,6 +202,11 @@ const DB_SCHEMA = {
   leads: 'array'
 };
 
+/**
+ * Validates DB structure against internal schema.
+ * @param {*} data
+ * @returns {string[]} Validation error messages (empty array means OK).
+ */
 function validateDb(data) {
   const errors = [];
   if (!data || typeof data !== 'object') {
@@ -167,6 +232,10 @@ function validateDb(data) {
   return errors;
 }
 
+/**
+ * Creates `db.json.bak` backup if `db.json` exists.
+ * @returns {string|null} Backup file path.
+ */
 function backupDb() {
   if (fs.existsSync(DB_FILE)) {
     const backupPath = DB_FILE + '.bak';
@@ -177,6 +246,11 @@ function backupDb() {
   return null;
 }
 
+/**
+ * Validates and persists DB data to `db.json` using an atomic write pattern.
+ * Also creates a backup before the write.
+ * @param {*} data
+ */
 function writeDb(data) {
   const errors = validateDb(data);
   if (errors.length > 0) {
@@ -189,6 +263,9 @@ function writeDb(data) {
   fs.renameSync(tempPath, DB_FILE);
 }
 
+/**
+ * Ensures `db.json` exists and is valid; restores defaults if DB is missing/corrupted.
+ */
 function initDb() {
   if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify(defaultDb, null, 2));
@@ -208,6 +285,10 @@ function initDb() {
   }
 }
 
+/**
+ * Reads DB from `db.json` and validates structure.
+ * @returns {*} DB object.
+ */
 function readDb() {
   const raw = fs.readFileSync(DB_FILE, 'utf8');
   const data = JSON.parse(raw);
@@ -326,6 +407,9 @@ function isRateLimited(ip) {
   rateLimitMap.set(ip, timestamps);
   return timestamps.length > maxRequests;
 }
+/**
+ * Clears in-memory rate limit state.
+ */
 function resetRateLimits() {
   rateLimitMap.clear();
 }
@@ -531,6 +615,127 @@ app.get('/api/content/history', (req, res) => {
   }
 });
 
+app.get('/api/stats', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  try {
+    const db = readDb();
+    const leads = Array.isArray(db.leads) ? db.leads : [];
+
+    const leadsByStatus = {
+      new: 0,
+      in_progress: 0,
+      completed: 0,
+      rejected: 0
+    };
+
+    let totalRevenue = 0;
+
+    leads.forEach(l => {
+      const status = l.status || 'new';
+      if (leadsByStatus[status] === undefined) leadsByStatus[status] = 0;
+      leadsByStatus[status] += 1;
+
+      if (l.type === 'calc' && l.details && l.details.total != null) {
+        totalRevenue += Number(l.details.total) || 0;
+      }
+    });
+
+    const avgResponseTimeMs =
+      apiTiming.count > 0 ? apiTiming.totalMs / apiTiming.count : 0;
+
+    res.json({
+      leadsByStatus,
+      totalRevenue: Math.round(totalRevenue),
+      avgResponseTimeMs: Math.round(avgResponseTimeMs * 100) / 100,
+      responseTimeRequests: apiTiming.count
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка статистики' });
+  }
+});
+
+app.post('/api/upload', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  const body = req.body || {};
+  const filename = typeof body.filename === 'string' ? body.filename : '';
+  const mimeType = typeof body.mimeType === 'string' ? body.mimeType : '';
+
+  // Supported payloads:
+  // - { base64: '...', filename: 'x.png', mimeType: 'image/png' }
+  // - { data: '...', filename: 'x.png', mimeType: 'image/png' } (alias)
+  // - { dataBase64: '...', filename: 'x.png', mimeType: 'image/png' } (alias)
+  const base64Raw =
+    typeof body.base64 === 'string'
+      ? body.base64
+      : (typeof body.data === 'string' ? body.data : (typeof body.dataBase64 === 'string' ? body.dataBase64 : ''));
+
+  if (!filename || !base64Raw) {
+    return res.status(400).json({ error: 'Файл не отправлен' });
+  }
+
+  let cleanBase64 = base64Raw;
+  if (cleanBase64.includes('base64,')) {
+    cleanBase64 = cleanBase64.split('base64,')[1];
+  }
+
+  let buffer;
+  try {
+    buffer = Buffer.from(cleanBase64, 'base64');
+  } catch {
+    return res.status(400).json({ error: 'Недопустимый base64' });
+  }
+
+  if (!buffer || !buffer.length) {
+    return res.status(400).json({ error: 'Недопустимый base64' });
+  }
+
+  if (buffer.length > UPLOAD_MAX_BYTES) {
+    return res.status(413).json({ error: 'Файл слишком большой' });
+  }
+
+  const sanitizedName = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, '');
+  if (!sanitizedName) {
+    return res.status(400).json({ error: 'Недопустимое имя файла' });
+  }
+
+  const extFromName = path.extname(sanitizedName).toLowerCase();
+  const extFromMime = mimeType.includes('/') ? `.${mimeType.split('/')[1]}` : '';
+  const finalExt = extFromName || extFromMime || '';
+
+  if (mimeType && !mimeType.startsWith('image/')) {
+    return res.status(400).json({ error: 'Разрешены только изображения (image/*)' });
+  }
+
+  if (finalExt.length > 10) {
+    return res.status(400).json({ error: 'Недопустимое расширение файла' });
+  }
+
+  const outName = `upload_${Date.now()}_${Math.random().toString(16).slice(2)}${finalExt}`;
+  const outPath = path.join(UPLOAD_DIR, outName);
+
+  try {
+    fs.writeFileSync(outPath, buffer);
+  } catch (err) {
+    logToFile(`ERROR upload: ${err.message}`);
+    return res.status(500).json({ error: 'Не удалось сохранить файл' });
+  }
+
+  res.json({
+    success: true,
+    url: `/uploads/${outName}`,
+    filename: outName,
+    size: buffer.length
+  });
+});
+
 app.get('/api/health', (req, res) => {
   try {
     const uptimeSeconds = Math.floor((Date.now() - SERVER_START_TIME) / 1000);
@@ -647,19 +852,22 @@ app.post('/api/calculate', (req, res) => {
       return res.status(400).json({ error: 'Укажите цену и длину забора' });
     }
 
-    const heightOptions = defaultDb.content.calc_heights || [];
+    const db = readDb();
+    const content = (db && db.content) ? db.content : defaultDb.content;
+
+    const heightOptions = content.calc_heights || defaultDb.content.calc_heights || [];
     const heightOpt = heightOptions.find(h => h.value === height);
     const hm = heightOpt ? heightOpt.multiplier : (height && height > 0 ? height : 1.0);
     const pm = paintMultiplier || 1.0;
     const fenceCost = length * fencePrice * hm * pm;
     const addonsCost = Array.isArray(addons) ? addons.reduce((sum, a) => sum + (a.price || 0), 0) : 0;
-    const deliveryCost = delivery ? defaultDb.content.calc_delivery_fee || 5000 : 0;
+    const deliveryCost = delivery ? (content.calc_delivery_fee || defaultDb.content.calc_delivery_fee || 5000) : 0;
     let subtotal = fenceCost + addonsCost + deliveryCost;
 
     const area = length * (heightOpt ? heightOpt.value : (height || 2));
     let discount = 0;
-    const threshold = defaultDb.content.calc_discount_threshold || 100;
-    const discountPercent = defaultDb.content.calc_discount_percent || 5;
+    const threshold = content.calc_discount_threshold || defaultDb.content.calc_discount_threshold || 100;
+    const discountPercent = content.calc_discount_percent || defaultDb.content.calc_discount_percent || 5;
     if (area > threshold) {
       discount = subtotal * (discountPercent / 100);
       subtotal -= discount;
@@ -680,60 +888,12 @@ app.post('/api/calculate', (req, res) => {
   }
 });
 
-app.get('/api/health', (req, res) => {
-  const uptimeMs = Date.now() - SERVER_START_TIME;
-  const uptimeSeconds = Math.floor(uptimeMs / 1000);
-  const uptimeMinutes = Math.floor(uptimeSeconds / 60);
-  const uptimeHours = Math.floor(uptimeMinutes / 60);
-  const uptimeDays = Math.floor(uptimeHours / 24);
-  const uptime = {
-    days: uptimeDays,
-    hours: uptimeHours % 24,
-    minutes: uptimeMinutes % 60,
-    seconds: uptimeSeconds % 60,
-    since: new Date(SERVER_START_TIME).toISOString()
-  };
-
-  const memoryUsage = process.memoryUsage();
-  const memUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
-  const memTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
-
-  let dbStatus = { readable: false, writable: false, error: null };
-  try {
-    readDb();
-    dbStatus.readable = true;
-    dbStatus.writable = true;
-  } catch (err) {
-    dbStatus.error = err.message;
-  }
-
-  let logFileSize = 0;
-  try {
-    if (fs.existsSync(LOG_FILE)) {
-      const stats = fs.statSync(LOG_FILE);
-      logFileSize = stats.size;
-    }
-  } catch (err) {
-    logFileSize = 0;
-  }
-
-  res.json({
-    status: 'ok',
-    uptime,
-    memory: {
-      used: memUsedMB,
-      total: memTotalMB,
-      unit: 'MB'
-    },
-    database: dbStatus,
-    logFile: {
-      size: logFileSize,
-      unit: 'bytes'
-    }
-  });
+// ==================== ROUTING FIX ====================
+// Serve PLAN.md for the admin plan viewer page.
+app.get('/PLAN.md', (req, res) => {
+  res.sendFile(path.join(__dirname, 'PLAN.md'));
 });
 
-// ==================== ROUTING FIX ====================
 // GET / : Serve Landing Page (public/index.html)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -752,18 +912,65 @@ app.get('/admin/plan', (req, res) => {
 // 404 handler for unknown routes
 app.use((req, res) => {
   logToFile(`404: ${req.method} ${req.url}`);
-  res.status(404).sendFile(path.join(__dirname, 'public', '404.html')) || res.status(404).json({ error: 'Страница не найдена' });
+  // Для `/api/*` всегда возвращаем JSON, чтобы фронтенд и тесты стабильно работали.
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Страница не найдена' });
+  }
+
+  const notFoundHtmlPath = path.join(__dirname, 'public', '404.html');
+  if (fs.existsSync(notFoundHtmlPath)) {
+    return res.status(404).sendFile(notFoundHtmlPath);
+  }
+
+  // Fallback на JSON, если HTML не найден.
+  return res.status(404).json({ error: 'Страница не найдена' });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
-  logToFile(`500 ERROR: ${err.message}`);
+  const message = err && err.message ? err.message : String(err);
+
+  if (err && err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(413).json({ error: 'Файл слишком большой' });
+  }
+
+  if (message === 'Only image uploads are allowed') {
+    return res.status(400).json({ error: 'Разрешены только изображения (image/*)' });
+  }
+
+  logToFile(`500 ERROR: ${message}`);
   res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
+/**
+ * Gracefully closes a running HTTP server instance.
+ * @param {*} serverInstance
+ * @param {string} reason
+ * @returns {Promise<void>}
+ */
+function gracefulShutdown(serverInstance, reason = 'SIGTERM') {
+  return new Promise(resolve => {
+    try {
+      logToFile(`SHUTDOWN: ${reason}`);
+    } catch {
+      // ignore
+    }
+
+    if (!serverInstance || typeof serverInstance.close !== 'function') {
+      return resolve();
+    }
+
+    try {
+      serverInstance.close(() => resolve());
+    } catch {
+      resolve();
+    }
+  });
+}
+
 function startServer() {
   initDb();
-  app.listen(PORT, () => {
+  const serverInstance = app.listen(PORT, () => {
     console.log(`
 ╔════════════════════════════════════════════╗
 ║  🚀 Сервер запущен!                        ║
@@ -776,10 +983,13 @@ function startServer() {
 ╚════════════════════════════════════════════╝
   `);
   });
+
+  process.on('SIGTERM', () => gracefulShutdown(serverInstance, 'SIGTERM').then(() => process.exit(0)));
+  process.on('SIGINT', () => gracefulShutdown(serverInstance, 'SIGINT').then(() => process.exit(0)));
 }
 
 if (require.main === module) {
   startServer();
 }
 
-module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE };
+module.exports = { app, initDb, readDb, writeDb, backupDb, validateDb, generateToken, validateToken, sanitizeInput, sanitizeObject, resetRateLimits, defaultDb, ADMIN_PASSWORD, ADMIN_TOKEN_SECRET, DB_FILE, gracefulShutdown };

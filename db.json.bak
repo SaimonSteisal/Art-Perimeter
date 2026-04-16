@@ -174,7 +174,7 @@
         "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
       },
       {
-        "id": "1776292968600",
+        "id": "1776353455860",
         "title": "Тестовый объект",
         "tag": "Москва",
         "img": "https://example.com/test.jpg"
@@ -191,100 +191,135 @@
   },
   "leads": [
     {
-      "id": "1776292968680",
-      "timestamp": 1776292968680,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353456035",
+      "timestamp": 1776353456035,
+      "date": "16.04.2026, 18:30:56",
+      "status": "completed",
+      "type": "contact",
+      "name": "StatsContact1",
+      "phone": "+7 900 000 00 02"
+    },
+    {
+      "id": "1776353456030",
+      "timestamp": 1776353456030,
+      "date": "16.04.2026, 18:30:56",
+      "status": "in_progress",
+      "type": "calc",
+      "name": "StatsCalc2",
+      "phone": "+7 900 000 00 01",
+      "details": {
+        "total": 222
+      }
+    },
+    {
+      "id": "1776353456026",
+      "timestamp": 1776353456026,
+      "date": "16.04.2026, 18:30:56",
       "status": "new",
+      "type": "calc",
+      "name": "StatsCalc1",
+      "phone": "+7 900 000 00 00",
+      "details": {
+        "total": 111
+      }
+    },
+    {
+      "id": "1776353456005",
+      "timestamp": 1776353456005,
+      "date": "16.04.2026, 18:30:56",
+      "status": "completed",
       "type": "status",
       "name": "Status2",
-      "phone": "+7 555 555 55 55"
+      "phone": "+7 555 555 55 55",
+      "statusUpdatedAt": "16.04.2026, 18:30:56"
     },
     {
-      "id": "1776292968678",
-      "timestamp": 1776292968678,
-      "date": "15.04.2026, 22:42:48",
-      "status": "new",
+      "id": "1776353455998",
+      "timestamp": 1776353455998,
+      "date": "16.04.2026, 18:30:55",
+      "status": "completed",
       "type": "status",
       "name": "Status1",
-      "phone": "+7 444 444 44 44"
+      "phone": "+7 444 444 44 44",
+      "statusUpdatedAt": "16.04.2026, 18:30:56"
     },
     {
-      "id": "1776292968668",
-      "timestamp": 1776292968668,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455982",
+      "timestamp": 1776353455982,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "bulk",
       "name": "Bulk3",
       "phone": "+7 333 333 33 33"
     },
     {
-      "id": "1776292968662",
-      "timestamp": 1776292968662,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455967",
+      "timestamp": 1776353455967,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "ratelimit",
       "name": "Spam3",
       "phone": "+7 000 000 00 03"
     },
     {
-      "id": "1776292968660",
-      "timestamp": 1776292968660,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455962",
+      "timestamp": 1776353455962,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "ratelimit",
       "name": "Spam2",
       "phone": "+7 000 000 00 02"
     },
     {
-      "id": "1776292968658",
-      "timestamp": 1776292968658,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455957",
+      "timestamp": 1776353455957,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "ratelimit",
       "name": "Spam1",
       "phone": "+7 000 000 00 01"
     },
     {
-      "id": "1776292968656",
-      "timestamp": 1776292968656,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455953",
+      "timestamp": 1776353455953,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "ratelimit",
       "name": "Spam0",
       "phone": "+7 000 000 00 00"
     },
     {
-      "id": "1776292968631",
-      "timestamp": 1776292968631,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455913",
+      "timestamp": 1776353455913,
+      "date": "16.04.2026, 18:30:55",
       "status": "in_progress",
       "type": "patch-test",
       "name": "PatchTest",
       "phone": "+7 222 333 44 55",
-      "statusUpdatedAt": "15.04.2026, 22:42:48"
+      "statusUpdatedAt": "16.04.2026, 18:30:55"
     },
     {
-      "id": "1776292968630",
-      "timestamp": 1776292968630,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455908",
+      "timestamp": 1776353455908,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "status-test",
       "name": "StatusTest",
       "phone": "+7 111 222 33 44"
     },
     {
-      "id": "1776292968627",
-      "timestamp": 1776292968627,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455902",
+      "timestamp": 1776353455902,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "log-test",
       "name": "LogTest",
       "phone": "+7 000 111 22 33"
     },
     {
-      "id": "1776292968604",
-      "timestamp": 1776292968604,
-      "date": "15.04.2026, 22:42:48",
+      "id": "1776353455866",
+      "timestamp": 1776353455866,
+      "date": "16.04.2026, 18:30:55",
       "status": "new",
       "type": "calc",
       "name": "hack",
@@ -293,8 +328,8 @@
   ],
   "contentHistory": [
     {
-      "timestamp": 1776292968648,
-      "date": "15.04.2026, 22:42:48",
+      "timestamp": 1776353455941,
+      "date": "16.04.2026, 18:30:55",
       "changes": [
         "company_name"
       ],
@@ -473,7 +508,7 @@
             "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
           },
           {
-            "id": "1776292968600",
+            "id": "1776353455860",
             "title": "Тестовый объект",
             "tag": "Москва",
             "img": "https://example.com/test.jpg"
@@ -490,8 +525,8 @@
       }
     },
     {
-      "timestamp": 1776292968643,
-      "date": "15.04.2026, 22:42:48",
+      "timestamp": 1776353455931,
+      "date": "16.04.2026, 18:30:55",
       "changes": [
         "company_name"
       ],
@@ -670,7 +705,7 @@
             "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
           },
           {
-            "id": "1776292968600",
+            "id": "1776353455860",
             "title": "Тестовый объект",
             "tag": "Москва",
             "img": "https://example.com/test.jpg"
@@ -687,8 +722,8 @@
       }
     },
     {
-      "timestamp": 1776292968606,
-      "date": "15.04.2026, 22:42:48",
+      "timestamp": 1776353455872,
+      "date": "16.04.2026, 18:30:55",
       "changes": [
         "hero_title"
       ],
@@ -867,7 +902,7 @@
             "img": "https://images.unsplash.com/photo-1600607686527-6fb886090705?auto=format&fit=crop&w=600&q=80"
           },
           {
-            "id": "1776292968600",
+            "id": "1776353455860",
             "title": "Тестовый объект",
             "tag": "Москва",
             "img": "https://example.com/test.jpg"

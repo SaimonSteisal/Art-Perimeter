@@ -1,16 +1,2 @@
-[2026-04-15T22:42:48.628Z] LEAD: LogTest (+7 000 111 22 33) type=log-test status=new
-[2026-04-15T22:42:48.630Z] LEAD: StatusTest (+7 111 222 33 44) type=status-test status=new
-[2026-04-15T22:42:48.632Z] LEAD: PatchTest (+7 222 333 44 55) type=patch-test status=new
-[2026-04-15T22:42:48.635Z] LEAD STATUS: 1776292968631 -> in_progress
-[2026-04-15T22:42:48.643Z] CONTENT UPDATE: company_name
-[2026-04-15T22:42:48.649Z] CONTENT UPDATE: company_name
-[2026-04-15T22:42:48.652Z] CONTENT ROLLBACK to version 0
-[2026-04-15T22:42:48.657Z] LEAD: Spam0 (+7 000 000 00 00) type=ratelimit status=new
-[2026-04-15T22:42:48.659Z] LEAD: Spam1 (+7 000 000 00 01) type=ratelimit status=new
-[2026-04-15T22:42:48.661Z] LEAD: Spam2 (+7 000 000 00 02) type=ratelimit status=new
-[2026-04-15T22:42:48.662Z] LEAD: Spam3 (+7 000 000 00 03) type=ratelimit status=new
-[2026-04-15T22:42:48.666Z] LEAD: Bulk1 (+7 111 111 11 11) type=bulk status=new
-[2026-04-15T22:42:48.667Z] LEAD: Bulk2 (+7 222 222 22 22) type=bulk status=new
-[2026-04-15T22:42:48.669Z] LEAD: Bulk3 (+7 333 333 33 33) type=bulk status=new
-[2026-04-15T22:42:48.679Z] LEAD: Status1 (+7 444 444 44 44) type=status status=new
-[2026-04-15T22:42:48.681Z] LEAD: Status2 (+7 555 555 55 55) type=status status=new
+[2026-04-16T15:30:56.062Z] LEAD: RotateTest (+7 900 000 00 09) type=log-rotation status=new
+[2026-04-16T15:30:56.065Z] SHUTDOWN: TEST

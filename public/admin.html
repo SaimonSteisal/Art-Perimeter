@@ -60,7 +60,12 @@
         <div id="dashboard" class="hidden">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <h1>🔧 Админ Панель</h1>
-                <button class="btn-logout" onclick="Admin.logout()">Выйти</button>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <a class="btn-back" href="/admin/plan" target="_blank" style="margin-bottom:0; padding:10px 14px;">
+                        📋 План
+                    </a>
+                    <button class="btn-logout" onclick="Admin.logout()">Выйти</button>
+                </div>
             </div>
 
             <div class="tabs">
