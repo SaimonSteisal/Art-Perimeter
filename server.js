@@ -534,6 +534,196 @@ app.post('/api/calculate', (req, res) => {
   }
 });
 
+// ==================== ADMIN STATS ====================
+
+app.get('/api/stats', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const leads = db.leads || [];
+    const leadsByStatus = {};
+    const validStatuses = ['new', 'in_progress', 'completed', 'rejected'];
+    validStatuses.forEach(status => leadsByStatus[status] = 0);
+    leads.forEach(lead => {
+      const status = lead.status || 'new';
+      if (leadsByStatus[status] !== undefined) leadsByStatus[status]++;
+    });
+
+    // Total revenue from calculator - for now, assume not tracked, return 0
+    const totalRevenue = 0; // TODO: Track calculator usage
+
+    // Avg response time - time from lead creation to first status change (simplified)
+    let totalResponseTime = 0;
+    let countWithResponse = 0;
+    leads.forEach(lead => {
+      if (lead.statusUpdatedAt && lead.date) {
+        const created = new Date(lead.date.replace(/(\d{2})\.(\d{2})\.(\d{4})/, '$3-$2-$1'));
+        const updated = new Date(lead.statusUpdatedAt.replace(/(\d{2})\.(\d{2})\.(\d{4})/, '$3-$2-$1'));
+        const diff = updated - created;
+        if (diff > 0) {
+          totalResponseTime += diff;
+          countWithResponse++;
+        }
+      }
+    });
+    const avgResponseTimeMs = countWithResponse > 0 ? totalResponseTime / countWithResponse : 0;
+
+    res.json({
+      leadsCount: leads.length,
+      leadsByStatus,
+      totalRevenue,
+      avgResponseTimeMs,
+      avgResponseTimeHours: Math.round(avgResponseTimeMs / (1000 * 60 * 60) * 100) / 100
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось получить статистику' });
+  }
+});
+
+// ==================== BULK LEAD OPERATIONS ====================
+
+app.post('/api/leads/bulk-delete', (req, res) => {
+  const { token, ids } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Не указаны ID заявок для удаления' });
+  }
+  try {
+    const db = readDb();
+    const beforeCount = db.leads.length;
+    db.leads = db.leads.filter(lead => !ids.includes(lead.id));
+    const deletedCount = beforeCount - db.leads.length;
+    writeDb(db);
+    logToFile(`BULK DELETE: ${deletedCount} leads deleted`);
+    res.json({ success: true, deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось выполнить массовое удаление' });
+  }
+});
+
+app.post('/api/leads/bulk-status', (req, res) => {
+  const { token, ids, status } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Не указаны ID заявок' });
+  }
+  const validStatuses = ['new', 'in_progress', 'completed', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Недопустимый статус. Допустимые: ${validStatuses.join(', ')}` });
+  }
+  try {
+    const db = readDb();
+    let updatedCount = 0;
+    ids.forEach(id => {
+      const lead = db.leads.find(l => l.id === id);
+      if (lead) {
+        lead.status = status;
+        lead.statusUpdatedAt = new Date().toLocaleString('ru-RU');
+        updatedCount++;
+      }
+    });
+    writeDb(db);
+    logToFile(`BULK STATUS: ${updatedCount} leads updated to ${status}`);
+    res.json({ success: true, updatedCount });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось выполнить массовое обновление статуса' });
+  }
+});
+
+// ==================== CONTENT PREVIEW ====================
+
+app.get('/api/preview', (req, res) => {
+  const { token, content } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  try {
+    const db = readDb();
+    const previewContent = { ...db.content, ...JSON.parse(content || '{}') };
+    // Generate a simple HTML preview
+    const html = `
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Preview - ${previewContent.site_title}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .preview { border: 2px dashed #ccc; padding: 20px; background: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <div class="preview">
+    <h1>${previewContent.hero_title || 'Заголовок'}</h1>
+    <p>${previewContent.hero_description || 'Описание'}</p>
+    <h2>Преимущества</h2>
+    <ul>
+      ${(previewContent.advantages || []).map(a => `<li>${a.title}: ${a.desc}</li>`).join('')}
+    </ul>
+  </div>
+</body>
+</html>`;
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка генерации превью' });
+  }
+});
+
+// ==================== FILE UPLOAD ====================
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+}
+
+app.post('/api/upload', (req, res) => {
+  const { token } = req.body;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  // For simplicity, assume file is sent as base64 in body.fileData
+  const { fileData, fileName } = req.body;
+  if (!fileData || !fileName) {
+    return res.status(400).json({ error: 'Файл не предоставлен' });
+  }
+  try {
+    // Parse data URL
+    const match = fileData.match(/^data:([^;]+);base64,(.+)$/);
+    if (!match) {
+      return res.status(400).json({ error: 'Неверный формат файла' });
+    }
+    const mime = match[1];
+    const base64Data = match[2];
+    // Validate mime
+    if (!mime.startsWith('image/')) {
+      return res.status(400).json({ error: 'Только изображения разрешены' });
+    }
+    // Decode buffer
+    const buffer = Buffer.from(base64Data, 'base64');
+    // Validate file size (5MB limit)
+    if (buffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Файл слишком большой (макс 5MB)' });
+    }
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(fileName);
+    const filePath = path.join(uploadsDir, uniqueName);
+    fs.writeFileSync(filePath, buffer);
+    const fileUrl = `/uploads/${uniqueName}`;
+    logToFile(`FILE UPLOAD: ${uniqueName} (${buffer.length} bytes)`);
+    res.json({ success: true, fileUrl, filename: uniqueName });
+  } catch (err) {
+    res.status(500).json({ error: 'Ошибка загрузки файла' });
+  }
+});
+
 // ==================== ROUTING FIX ====================
 // GET / : Serve Landing Page (public/index.html)
 app.get('/', (req, res) => {

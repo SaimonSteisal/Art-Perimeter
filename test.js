@@ -50,6 +50,7 @@ test.before(async () => {
   // Reset db to default for tests
   if (fs.existsSync(DB_FILE)) fs.unlinkSync(DB_FILE);
   initDb();
+  resetRateLimits(); // Reset rate limits for tests
   server = app.listen(TEST_PORT);
   // Wait for server to start
   await new Promise(resolve => setTimeout(resolve, 100));
@@ -786,4 +787,125 @@ test('Rate limiting — блокирует после 5 запросов за м
   const res = await request('POST', '/api/leads', { type: 'ratelimit', name: 'Blocked', phone: '+7 000 000 00 99' });
   assert.strictEqual(res.status, 429);
   assert.ok(res.body.error);
+});
+
+// ==================== ADMIN STATS TESTS ====================
+
+test('GET /api/stats — возвращает статистику с токеном', async () => {
+  const token = await getValidToken();
+  const res = await request('GET', `/api/stats?token=${encodeURIComponent(token)}`);
+  assert.strictEqual(res.status, 200);
+  assert.ok(typeof res.body.leadsCount === 'number');
+  assert.ok(res.body.leadsByStatus);
+  assert.ok(typeof res.body.totalRevenue === 'number');
+  assert.ok(typeof res.body.avgResponseTimeMs === 'number');
+});
+
+test('GET /api/stats — без токена 403', async () => {
+  const res = await request('GET', '/api/stats');
+  assert.strictEqual(res.status, 403);
+});
+
+// ==================== BULK OPERATIONS TESTS ====================
+
+test('POST /api/leads/bulk-delete — удаляет несколько заявок', async () => {
+  resetRateLimits(); // Reset for this test
+  // Create test leads
+  const lead1 = await request('POST', '/api/leads', { type: 'bulk-test', name: 'Bulk1', phone: '+7 111 111 11 11' });
+  const lead2 = await request('POST', '/api/leads', { type: 'bulk-test', name: 'Bulk2', phone: '+7 222 222 22 22' });
+  const ids = [lead1.body.id, lead2.body.id];
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-delete', { token, ids });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.deletedCount, 2);
+});
+
+test('POST /api/leads/bulk-delete — без токена 403', async () => {
+  const res = await request('POST', '/api/leads/bulk-delete', { ids: ['fake'] });
+  assert.strictEqual(res.status, 403);
+});
+
+test('POST /api/leads/bulk-delete — пустой массив ID 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-delete', { token, ids: [] });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/leads/bulk-status — обновляет статус нескольких заявок', async () => {
+  resetRateLimits(); // Reset for this test
+  // Create test leads
+  const lead1 = await request('POST', '/api/leads', { type: 'bulk-status-test', name: 'Status1', phone: '+7 333 333 33 33' });
+  const lead2 = await request('POST', '/api/leads', { type: 'bulk-status-test', name: 'Status2', phone: '+7 444 444 44 44' });
+  const ids = [lead1.body.id, lead2.body.id];
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-status', { token, ids, status: 'completed' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.strictEqual(res.body.updatedCount, 2);
+});
+
+test('POST /api/leads/bulk-status — недопустимый статус 400', async () => {
+  const token = await getValidToken();
+  const res = await request('POST', '/api/leads/bulk-status', { token, ids: ['fake'], status: 'invalid' });
+  assert.strictEqual(res.status, 400);
+});
+
+test('POST /api/leads/bulk-status — без токена 403', async () => {
+  const res = await request('POST', '/api/leads/bulk-status', { ids: ['fake'], status: 'completed' });
+  assert.strictEqual(res.status, 403);
+});
+
+// ==================== PREVIEW TESTS ====================
+
+test('GET /api/preview — возвращает HTML превью с токеном', async () => {
+  const token = await getValidToken();
+  const content = JSON.stringify({ hero_title: 'Preview Test Title' });
+  const res = await request('GET', `/api/preview?token=${encodeURIComponent(token)}&content=${encodeURIComponent(content)}`);
+  assert.strictEqual(res.status, 200);
+  assert.ok(typeof res.body === 'string');
+  assert.ok(res.body.includes('Preview Test Title'));
+  assert.ok(res.body.includes('<!DOCTYPE html>'));
+});
+
+test('GET /api/preview — без токена 403', async () => {
+  const res = await request('GET', '/api/preview');
+  assert.strictEqual(res.status, 403);
+});
+
+// ==================== FILE UPLOAD TESTS ====================
+
+test('POST /api/upload — загружает файл с токеном', async () => {
+  const token = await getValidToken();
+  // Create a small base64 image
+  const smallImageBase64 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+  const res = await request('POST', '/api/upload', { token, fileData: smallImageBase64, fileName: 'test.png' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.success, true);
+  assert.ok(res.body.fileUrl);
+  assert.ok(res.body.filename);
+});
+
+test('POST /api/upload — файл слишком большой 400', async () => {
+  const token = await getValidToken();
+  // Create a large buffer and encode to base64 (simulate >5MB)
+  const largeBuffer = Buffer.alloc(6 * 1024 * 1024, 0); // 6MB
+  const largeBase64 = largeBuffer.toString('base64');
+  const largeData = 'data:image/png;base64,' + largeBase64;
+  const res = await request('POST', '/api/upload', { token, fileData: largeData, fileName: 'large.png' });
+  assert.strictEqual(res.status, 400);
+  assert.ok(res.body.error.includes('слишком большой'));
+});
+
+test('POST /api/upload — не изображение 400', async () => {
+  const token = await getValidToken();
+  const textData = 'data:text/plain;base64,SGVsbG8gV29ybGQ=';
+  const res = await request('POST', '/api/upload', { token, fileData: textData, fileName: 'test.txt' });
+  assert.strictEqual(res.status, 400);
+  assert.ok(res.body.error.includes('Только изображения'));
+});
+
+test('POST /api/upload — без токена 403', async () => {
+  const res = await request('POST', '/api/upload', { fileData: 'fake', fileName: 'test.png' });
+  assert.strictEqual(res.status, 403);
 });
