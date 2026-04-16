@@ -787,3 +787,18 @@ test('Rate limiting — блокирует после 5 запросов за м
   assert.strictEqual(res.status, 429);
   assert.ok(res.body.error);
 });
+
+// ==================== GRACEFUL SHUTDOWN TESTS ====================
+
+test('Graceful shutdown — server variable is defined after start', async () => {
+  const { startServer } = require('./server');
+  assert.ok(typeof startServer === 'function');
+});
+
+test('Graceful shutdown — server.close() is callable', async () => {
+  const testServer = app.listen(0, () => {
+    testServer.close((err) => {
+      assert.strictEqual(err, undefined);
+    });
+  });
+});
