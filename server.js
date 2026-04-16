@@ -1,11 +1,13 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const cors = require('cors');
 
 const app = express();
 const PORT = 3000;
 const LOG_FILE = path.join(__dirname, 'logs.txt');
+const SERVER_START_TIME = Date.now();
 
 function logToFile(message) {
   const timestamp = new Date().toISOString();
@@ -393,6 +395,61 @@ app.delete('/api/leads/:id', (req, res) => {
   }
 });
 
+app.post('/api/leads/bulk-delete', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Требуется массив ID заявок' });
+  }
+  try {
+    const db = readDb();
+    const before = db.leads.length;
+    const idsSet = new Set(ids.map(String));
+    db.leads = db.leads.filter(lead => !idsSet.has(lead.id));
+    const deleted = before - db.leads.length;
+    writeDb(db);
+    console.log(`🗑️ Удалено заявок: ${deleted}`);
+    res.json({ success: true, deleted: deleted });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось удалить заявки' });
+  }
+});
+
+app.post('/api/leads/bulk-status', (req, res) => {
+  const { token } = req.query;
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+  const { ids, status } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'Требуется массив ID заявок' });
+  }
+  const validStatuses = ['new', 'in_progress', 'completed', 'rejected'];
+  if (!validStatuses.includes(status)) {
+    return res.status(400).json({ error: `Недопустимый статус. Допустимые: ${validStatuses.join(', ')}` });
+  }
+  try {
+    const db = readDb();
+    const idsSet = new Set(ids.map(String));
+    let updated = 0;
+    db.leads.forEach(lead => {
+      if (idsSet.has(lead.id)) {
+        lead.status = status;
+        lead.statusUpdatedAt = new Date().toLocaleString('ru-RU');
+        updated++;
+      }
+    });
+    writeDb(db);
+    console.log(`✏️ Обновлено статусов: ${updated}`);
+    res.json({ success: true, updated: updated });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось обновить статусы' });
+  }
+});
+
 app.post('/api/portfolio', (req, res) => {
   const { token, item } = req.body;
   if (!validateToken(token)) {
@@ -473,6 +530,57 @@ app.get('/api/content/history', (req, res) => {
   }
 });
 
+app.get('/api/health', (req, res) => {
+  try {
+    const uptimeSeconds = Math.floor((Date.now() - SERVER_START_TIME) / 1000);
+    const uptime = {
+      seconds: uptimeSeconds,
+      human: `${Math.floor(uptimeSeconds / 86400)}d ${Math.floor((uptimeSeconds % 86400) / 3600)}h ${Math.floor((uptimeSeconds % 3600) / 60)}m ${uptimeSeconds % 60}s`
+    };
+    
+    const memUsage = process.memoryUsage();
+    const totalMem = os.totalmem();
+    const freeMem = os.freemem();
+    const memory = {
+      used: Math.round(memUsage.heapUsed / 1024 / 1024),
+      heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+      rss: Math.round(memUsage.rss / 1024 / 1024),
+      systemTotal: Math.round(totalMem / 1024 / 1024),
+      systemFree: Math.round(freeMem / 1024 / 1024)
+    };
+    
+    let dbStatus = { readable: false, writable: false };
+    try {
+      readDb();
+      dbStatus.readable = true;
+      dbStatus.writable = true;
+    } catch (e) {
+      dbStatus.error = e.message;
+    }
+    
+    let logSize = 0;
+    try {
+      if (fs.existsSync(LOG_FILE)) {
+        const stats = fs.statSync(LOG_FILE);
+        logSize = Math.round(stats.size / 1024);
+      }
+    } catch (e) {
+      logSize = -1;
+    }
+    
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      uptime,
+      memory,
+      database: dbStatus,
+      logFileSize: logSize
+    });
+  } catch (err) {
+    res.status(500).json({ status: 'error', error: err.message });
+  }
+});
+
 app.post('/api/content/rollback', (req, res) => {
   const { token, versionIndex } = req.body;
   if (!validateToken(token)) {
@@ -490,6 +598,43 @@ app.post('/api/content/rollback', (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Ошибка отката' });
+  }
+});
+
+app.get('/api/preview', (req, res) => {
+  const { token, changes, ...queryFields } = req.query;
+
+  if (!validateToken(token)) {
+    return res.status(403).json({ error: 'Доступ запрещён' });
+  }
+
+  try {
+    let contentChanges = {};
+    
+    if (changes) {
+      try {
+        contentChanges = JSON.parse(changes);
+      } catch {
+        return res.status(400).json({ error: 'Недопустимый формат изменений' });
+      }
+    } else {
+      for (const [key, value] of Object.entries(queryFields)) {
+        if (key !== 'token') {
+          contentChanges[key] = value;
+        }
+      }
+    }
+
+    const db = readDb();
+    const sanitizedPreview = sanitizeObject({ ...db.content, ...contentChanges });
+    
+    res.json({
+      success: true,
+      preview: sanitizedPreview,
+      appliedChanges: Object.keys(contentChanges)
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Не удалось создать превью' });
   }
 });
 
@@ -532,6 +677,59 @@ app.post('/api/calculate', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Ошибка расчёта' });
   }
+});
+
+app.get('/api/health', (req, res) => {
+  const uptimeMs = Date.now() - SERVER_START_TIME;
+  const uptimeSeconds = Math.floor(uptimeMs / 1000);
+  const uptimeMinutes = Math.floor(uptimeSeconds / 60);
+  const uptimeHours = Math.floor(uptimeMinutes / 60);
+  const uptimeDays = Math.floor(uptimeHours / 24);
+  const uptime = {
+    days: uptimeDays,
+    hours: uptimeHours % 24,
+    minutes: uptimeMinutes % 60,
+    seconds: uptimeSeconds % 60,
+    since: new Date(SERVER_START_TIME).toISOString()
+  };
+
+  const memoryUsage = process.memoryUsage();
+  const memUsedMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+  const memTotalMB = Math.round(memoryUsage.heapTotal / 1024 / 1024);
+
+  let dbStatus = { readable: false, writable: false, error: null };
+  try {
+    readDb();
+    dbStatus.readable = true;
+    dbStatus.writable = true;
+  } catch (err) {
+    dbStatus.error = err.message;
+  }
+
+  let logFileSize = 0;
+  try {
+    if (fs.existsSync(LOG_FILE)) {
+      const stats = fs.statSync(LOG_FILE);
+      logFileSize = stats.size;
+    }
+  } catch (err) {
+    logFileSize = 0;
+  }
+
+  res.json({
+    status: 'ok',
+    uptime,
+    memory: {
+      used: memUsedMB,
+      total: memTotalMB,
+      unit: 'MB'
+    },
+    database: dbStatus,
+    logFile: {
+      size: logFileSize,
+      unit: 'bytes'
+    }
+  });
 });
 
 // ==================== ROUTING FIX ====================
