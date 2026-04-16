@@ -44,6 +44,7 @@
     .header-inner { display: flex; justify-content: space-between; align-items: center; }
     .logo { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.2rem; text-transform: uppercase; }
     .logo-icon { width: 40px; height: 40px; background: var(--primary-green); color: white; display: grid; place-items: center; border-radius: 4px; }
+    .logo-sub { font-size: 0.7rem; color: #888; font-weight: 400; }
     nav ul { display: flex; gap: 30px; list-style: none; }
     nav a:hover { color: var(--primary-green); }
     .header-contacts { text-align: right; }
@@ -76,6 +77,7 @@
       text-transform: uppercase;
     }
     .btn:hover { background-color: var(--primary-hover); }
+    .btn-full { width: 100%; }
 
     .features { padding: 60px 0; background: #181818; border-bottom: 1px solid #333; }
     .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
@@ -121,6 +123,9 @@
     .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
     .service-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; border: 1px solid #333; }
     .card-img { height: 190px; background-size: cover; background-position: center; }
+    .card-img-1 { background-image: url('https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=600'); }
+    .card-img-2 { background-image: url('https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600'); }
+    .card-img-3 { background-image: url('https://images.pexels.com/photos/210617/pexels-photo-210617.jpeg?auto=compress&cs=tinysrgb&w=600'); }
     .card-body { padding: 20px; }
 
     .portfolio-bg { background-color: #0f0f0f; }
@@ -162,7 +167,7 @@
     <div class="container header-inner">
       <a href="#" class="logo">
         <div class="logo-icon">А</div>
-        <div>Арт Периметр<br><span style="font-size:0.7rem;color:#888;font-weight:400;">Металлоконструкции</span></div>
+        <div>Арт Периметр<br><span class="logo-sub">Металлоконструкции</span></div>
       </a>
       <nav id="navbar">
         <ul>
@@ -261,7 +266,7 @@
             <input type="text" id="calcName" class="calc-input" placeholder="Ваше имя" required>
             <input type="tel" id="calcPhone" class="calc-input" placeholder="Ваш телефон" required>
             <div id="formHint" class="hint"></div>
-            <button type="submit" class="btn" style="width:100%;">Получить точный расчет и замер</button>
+            <button type="submit" class="btn btn-full">Получить точный расчет и замер</button>
             <div class="calc-actions"><button type="button" class="btn calc-prev" onclick="prevStep(3)">Назад</button><div></div></div>
           </div>
         </form>
@@ -276,9 +281,9 @@
         <p>Выполняем полный цикл работ: замер, проектирование, изготовление, доставка и монтаж.</p>
       </div>
       <div class="services-grid">
-        <div class="service-card fade-in"><div class="card-img" style="background-image:url('https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="card-body"><h3>Заборы и ограждения</h3></div></div>
-        <div class="service-card fade-in"><div class="card-img" style="background-image:url('https://images.pexels.com/photos/534220/pexels-photo-534220.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="card-body"><h3>Калитки и ворота</h3></div></div>
-        <div class="service-card fade-in"><div class="card-img" style="background-image:url('https://images.pexels.com/photos/210617/pexels-photo-210617.jpeg?auto=compress&cs=tinysrgb&w=600')"></div><div class="card-body"><h3>Навесы для авто</h3></div></div>
+        <div class="service-card fade-in"><div class="card-img card-img-1"></div><div class="card-body"><h3>Заборы и ограждения</h3></div></div>
+        <div class="service-card fade-in"><div class="card-img card-img-2"></div><div class="card-body"><h3>Калитки и ворота</h3></div></div>
+        <div class="service-card fade-in"><div class="card-img card-img-3"></div><div class="card-body"><h3>Навесы для авто</h3></div></div>
       </div>
     </div>
   </section>

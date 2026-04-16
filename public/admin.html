@@ -51,7 +51,7 @@
         <div id="login-screen" class="login-form">
             <h1>🔐 Вход в админку</h1>
             <input type="password" id="admin-pass" placeholder="Введите пароль">
-            <button onclick="Admin.login()">Войти</button>
+            <button type="button" onclick="Admin.login()">Войти</button>
             <p style="margin-top:20px;color:#666;font-size:0.875rem;">
                 <a href="index.html">← Вернуться на сайт</a>
             </p>
@@ -60,12 +60,12 @@
         <div id="dashboard" class="hidden">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
                 <h1>🔧 Админ Панель</h1>
-                <button class="btn-logout" onclick="Admin.logout()">Выйти</button>
+                <button type="button" class="btn-logout" onclick="Admin.logout()">Выйти</button>
             </div>
 
             <div class="tabs">
-                <button class="tab active" data-tab="content">✏️ Контент</button>
-                <button class="tab" data-tab="leads">📩 Заявки</button>
+                <button type="button" class="tab active" data-tab="content">✏️ Контент</button>
+                <button type="button" class="tab" data-tab="leads">📩 Заявки</button>
             </div>
 
             <div id="content-tab" class="tab-content active">
@@ -92,7 +92,7 @@
                     <div class="form-group"><label>Фон (URL)</label><input type="text" id="edit-hero-bg"></div>
                 </div>
 
-                <button class="btn-save" onclick="Admin.saveContent()">💾 Сохранить изменения</button>
+                <button type="button" class="btn-save" onclick="Admin.saveContent()">💾 Сохранить изменения</button>
                 <a href="index.html" target="_blank" class="btn-back" style="display:inline-block;margin-top:15px;">🌐 Открыть сайт</a>
             </div>
 

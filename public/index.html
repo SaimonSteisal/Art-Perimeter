@@ -13,7 +13,7 @@
     <header id="header"></header>
 
     <div id="mobile-menu" class="mobile-menu hidden">
-        <button class="mobile-menu-close" onclick="App.closeMobileMenu()">✕</button>
+        <button type="button" class="mobile-menu-close" onclick="App.closeMobileMenu()">✕</button>
         <nav id="mobile-nav"></nav>
     </div>
 
@@ -22,7 +22,7 @@
     <footer id="footer"></footer>
 
     <div id="toast" class="toast hidden">
-        <svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" focusable="false">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
         <span id="toast-message"></span>
