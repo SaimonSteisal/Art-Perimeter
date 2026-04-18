@@ -2,10 +2,222 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;url=/">
-    <title>Арт Периметр</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Арт Периметр — Металлические заборы и конструкции в Москве</title>
+    <meta name="description" content="Профессиональная установка заборов из профнастила, 3D панелей, евроштакетника. Калькулятор стоимости онлайн.">
+    <link rel="stylesheet" href="src/css/styles.css">
+    
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Арт Периметр",
+      "image": "/assets/logo.png",
+      "telephone": "+7 (495) 123-45-67",
+      "url": "https://art-perimeter.ru",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Москва",
+        "addressCountry": "RU"
+      },
+      "priceRange": "₽₽",
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+        "opens": "09:00",
+        "closes": "20:00"
+      }
+    }
+    </script>
 </head>
 <body>
-    <a href="/">Перейти на сайт</a>
+    <!-- Header -->
+    <header>
+        <nav>
+            <a href="/" class="logo">Арт Периметр</a>
+            <ul class="nav-links">
+                <li><a href="#calculator">Калькулятор</a></li>
+                <li><a href="#portfolio">Портфолио</a></li>
+                <li><a href="#contact">Контакты</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Металлические заборы под ключ</h1>
+            <p>Профессиональный монтаж заборов и ограждений в Москве и Московской области</p>
+            <a href="#calculator" class="btn">Рассчитать стоимость</a>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section id="calculator" class="calculator-section">
+        <div class="calculator-container">
+            <h2 class="text-center">Калькулятор забора</h2>
+            
+            <!-- Step 1: Fence Type -->
+            <div class="calculator-step">
+                <h3>1. Выберите тип забора</h3>
+                <div id="fence-options">
+                    <!-- Dynamically rendered by app.js -->
+                </div>
+            </div>
+
+            <!-- Step 2: Parameters -->
+            <div class="calculator-step">
+                <h3>2. Параметры забора</h3>
+                
+                <div class="form-group">
+                    <label for="length">Длина забора (метры)</label>
+                    <input type="number" id="length" min="1" placeholder="Введите длину">
+                </div>
+
+                <div class="form-group">
+                    <label for="height">Высота забора</label>
+                    <select id="height">
+                        <option value="1.5">1.5 м</option>
+                        <option value="1.8">1.8 м</option>
+                        <option value="2.0">2.0 м</option>
+                        <option value="2.5">2.5 м</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="paint-option">Покрытие</label>
+                    <select id="paint-option">
+                        <option value="none">Без покраски</option>
+                        <option value="ground">Грунт-эмаль (+10%)</option>
+                        <option value="powder">Порошковая покраска (+20%)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="delivery" style="width: auto; margin-right: 0.5rem;">
+                        Включить доставку (5 000 ₽)
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 3: Addons -->
+            <div class="calculator-step">
+                <h3>3. Дополнительные опции</h3>
+                <div id="addon-options">
+                    <!-- Dynamically rendered by app.js -->
+                </div>
+            </div>
+
+            <!-- Result -->
+            <div class="calculator-step">
+                <h3>Итоговая стоимость</h3>
+                <div class="result-box">
+                    <p>Предварительная стоимость:</p>
+                    <div class="result-total" id="result-total">—</div>
+                    <div id="result-breakdown"></div>
+                </div>
+            </div>
+
+            <!-- Contact Form with Netlify Forms -->
+            <div class="calculator-step">
+                <h3>Оставить заявку</h3>
+                <form 
+                    id="quote-form" 
+                    name="quote-request" 
+                    method="POST" 
+                    data-netlify="true"
+                    netlify-honeypot="bot-field"
+                    action="/success"
+                >
+                    <!-- Hidden fields for Netlify Forms -->
+                    <input type="hidden" name="form-name" value="quote-request">
+                    <input type="hidden" name="total_price" id="total_price">
+                    <input type="hidden" name="order_details" id="order_details">
+                    <input type="hidden" name="calc_total" id="calc_total">
+                    <input type="hidden" name="calc_fence_cost" id="calc_fence_cost">
+                    <input type="hidden" name="calc_addons_cost" id="calc_addons_cost">
+                    <input type="hidden" name="calc_delivery_cost" id="calc_delivery_cost">
+                    <input type="hidden" name="calc_discount" id="calc_discount">
+                    <input type="hidden" name="calc_area" id="calc_area">
+                    
+                    <!-- Honeypot field for spam protection -->
+                    <p class="hidden">
+                        <label>Не заполняйте это поле:<input name="bot-field"></label>
+                    </p>
+
+                    <div class="form-group">
+                        <label for="name">Ваше имя</label>
+                        <input type="text" id="name" name="name" required placeholder="Иван Иванов">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Телефон</label>
+                        <input type="tel" id="phone" name="phone" required placeholder="+7 (___) ___-__-__">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" placeholder="example@mail.ru">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Комментарий</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Дополнительная информация"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn" style="width: 100%;">Отправить заявку</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="portfolio-section">
+        <h2 class="text-center">Наши работы</h2>
+        <div class="portfolio-grid">
+            <div class="portfolio-item">
+                <img src="assets/portfolio-1.jpg" alt="Забор из профнастила" onerror="this.style.display='none'">
+                <div class="portfolio-item-content">
+                    <h4>Забор из профнастила</h4>
+                    <p>Длина: 150м, Высота: 2.0м</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <img src="assets/portfolio-2.jpg" alt="3D забор" onerror="this.style.display='none'">
+                <div class="portfolio-item-content">
+                    <h4>3D панели</h4>
+                    <p>Длина: 80м, Высота: 2.5м</p>
+                </div>
+            </div>
+            <div class="portfolio-item">
+                <img src="assets/portfolio-3.jpg" alt="Евроштакетник" onerror="this.style.display='none'">
+                <div class="portfolio-item-content">
+                    <h4>Евроштакетник</h4>
+                    <p>Длина: 120м, Высота: 1.8м</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="footer-content">
+            <h3>Арт Периметр</h3>
+            <p>Москва и Московская область</p>
+            <p>Тел: +7 (495) 123-45-67</p>
+            <ul class="footer-links">
+                <li><a href="#calculator">Калькулятор</a></li>
+                <li><a href="#portfolio">Портфолио</a></li>
+                <li><a href="#contact">Контакты</a></li>
+            </ul>
+            <p>&copy; 2024 Арт Периметр. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="src/js/calculator-engine.js"></script>
+    <script src="src/js/app.js"></script>
 </body>
 </html>
