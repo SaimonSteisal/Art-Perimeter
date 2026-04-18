@@ -1,10 +1,1 @@
-```
-# Environment
-.env.local
-
-# Editor
-.vscode/
-
-# Logs
-*.log
-```
+(src/js/app.js)
