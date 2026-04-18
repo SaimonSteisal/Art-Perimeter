@@ -1,16 +1,1 @@
-```
-# Logs and temp files
-*.log
-*.tmp
-
-# Environment
-.env
-.env.local
-.env.*
-
-# Backup files
-*.bak
-
-# Original rules preserved
-*.log
-```
+Nothing needs to be added to the .gitignore file based on the provided changes. The listed files (public/form-handler.js, public/app.js, public/index.html) are all source code files that should be tracked by git.
