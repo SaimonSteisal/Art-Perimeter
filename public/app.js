@@ -835,109 +835,12 @@ const App = (function() {
 
     document.addEventListener('DOMContentLoaded', init);
 
-    return {
+    // Expose calcState globally for form-handler.js integration
+    window.AppState = calcState;
+    window.App = {
         selectFence, toggleAddon, updateLength, updateHeight, updatePaint, toggleDelivery, nextCalcStep, prevCalcStep,
-        toggleMobileMenu, closeMobileMenu, openLoginModal, submitContactForm, handleNetlifySubmit,
+        toggleMobileMenu, closeMobileMenu, openLoginModal, submitContactForm,
+        getPricing,
         getContent: () => content
     };
-})();
-
-    /**
-     * Handle Netlify form submission
-     * Populates hidden fields with calculator data and submits to Netlify Forms
-     */
-    async function handleNetlifySubmit() {
-        const name = document.getElementById('calcName')?.value.trim();
-        const phone = document.getElementById('calcPhone')?.value.trim();
-        const hint = document.getElementById('formHint');
-        const phoneOk = /^\+?[0-9\s\-()]{10,}$/.test(phone);
-
-        if (!name || !phoneOk) { 
-            hint.textContent = 'Введите имя и корректный телефон.'; 
-            return; 
-        }
-        hint.textContent = '';
-
-        // Get current pricing from calculator
-        const pricing = getPricing();
-        
-        // Get the hidden Netlify form
-        const netlifyForm = document.getElementById('netlify-order-form');
-        if (!netlifyForm) {
-            showToast('Ошибка формы', 'error');
-            return;
-        }
-
-        // Populate hidden fields with calculation data
-        netlifyForm.querySelector('[name="total_price"]').value = pricing.total;
-        netlifyForm.querySelector('[name="order_details"]').value = JSON.stringify({
-            fence_type: calcState.fenceType,
-            fence_price: calcState.fencePrice,
-            length: calcState.length,
-            height: pricing.heightValue,
-            height_label: pricing.heightLabel,
-            paint_id: calcState.paintId,
-            paint_name: pricing.paintName,
-            addons: calcState.selectedAddons.map(a => a.name),
-            delivery: calcState.delivery,
-            discount_percent: pricing.discountPercent,
-            area: pricing.area
-        });
-        netlifyForm.querySelector('[name="fence_type"]').value = calcState.fenceType || '';
-        netlifyForm.querySelector('[name="fence_length"]').value = calcState.length;
-        netlifyForm.querySelector('[name="fence_height"]').value = pricing.heightValue;
-        netlifyForm.querySelector('[name="paint_option"]').value = pricing.paintName || 'Без покраски';
-        netlifyForm.querySelector('[name="delivery_included"]').value = calcState.delivery ? 'Да' : 'Нет';
-        netlifyForm.querySelector('[name="addons_list"]').value = calcState.selectedAddons.map(a => a.name).join(', ') || 'Нет';
-        netlifyForm.querySelector('[name="discount_applied"]').value = pricing.discount > 0 ? `${pricing.discountPercent}%` : 'Нет';
-        netlifyForm.querySelector('[name="calculation_area"]').value = pricing.area;
-
-        // Add customer name and phone as hidden fields for Netlify
-        let nameField = netlifyForm.querySelector('[name="customer_name"]');
-        if (!nameField) {
-            nameField = document.createElement('input');
-            nameField.type = 'hidden';
-            nameField.name = 'customer_name';
-            netlifyForm.appendChild(nameField);
-        }
-        nameField.value = name;
-
-        let phoneField = netlifyForm.querySelector('[name="customer_phone"]');
-        if (!phoneField) {
-            phoneField = document.createElement('input');
-            phoneField.type = 'hidden';
-            phoneField.name = 'customer_phone';
-            netlifyForm.appendChild(phoneField);
-        }
-        phoneField.value = phone;
-
-        try {
-            // Submit form data to Netlify
-            const formData = new FormData(netlifyForm);
-            const response = await fetch('/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams(formData).toString()
-            });
-
-            if (response.ok) {
-                showToast(`Спасибо, ${name}! Ваша заявка отправлена.`, 'success');
-                // Reset form and calculator
-                document.getElementById('calcName').value = '';
-                document.getElementById('calcPhone').value = '';
-                setTimeout(() => {
-                    resetCalculator();
-                    // Optionally go back to step 1
-                    document.querySelectorAll('.calc-step').forEach(s => s.classList.add('hidden'));
-                    const step1 = document.getElementById('step-1');
-                    if (step1) step1.classList.remove('hidden');
-                }, 2000);
-            } else {
-                throw new Error('Network response was not ok');
-            }
-        } catch (err) {
-            console.error('Form submission error:', err);
-            showToast('Ошибка отправки. Попробуйте еще раз.', 'error');
-        }
-    }
 })();
