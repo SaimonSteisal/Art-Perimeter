@@ -276,6 +276,20 @@ const App = (function() {
                                 </div>
                             </div>
                             <div id="step-3" class="calc-step hidden">
+                                <form id="netlify-order-form" name="order-form" data-netlify="true" data-netlify-honeypot="bot-field" class="hidden">
+                                    <input type="hidden" name="form-name" value="order-form">
+                                    <input type="hidden" name="total_price">
+                                    <input type="hidden" name="order_details">
+                                    <input type="hidden" name="fence_type">
+                                    <input type="hidden" name="fence_length">
+                                    <input type="hidden" name="fence_height">
+                                    <input type="hidden" name="paint_option">
+                                    <input type="hidden" name="delivery_included">
+                                    <input type="hidden" name="addons_list">
+                                    <input type="hidden" name="discount_applied">
+                                    <input type="hidden" name="calculation_area">
+                                    <input type="text" name="bot-field" style="display:none" tabindex="-1" autocomplete="off">
+                                </form>
                                 <div class="bg-primary/10 p-6 md:p-8 mb-6 md:mb-8 border border-primary/20">
                                     <p class="text-on-surface-variant text-xs font-space uppercase tracking-widest mb-2">Ориентировочная стоимость</p>
                                     <div class="text-3xl md:text-4xl font-space font-black text-primary" id="finalPrice">${formatter.format(calculateTotal())}</div>
@@ -284,7 +298,7 @@ const App = (function() {
                                 <input type="text" id="calcName" class="w-full bg-surface-container-high border-none focus:ring-1 focus:ring-primary py-3 md:py-4 px-4 md:px-6 text-white placeholder:text-outline/50 font-space mb-3 md:mb-4" placeholder="Ваше имя" required inputmode="text" autocomplete="name">
                                 <input type="tel" id="calcPhone" class="w-full bg-surface-container-high border-none focus:ring-1 focus:ring-primary py-3 md:py-4 px-4 md:px-6 text-white placeholder:text-outline/50 font-space mb-3 md:mb-4" placeholder="Ваш телефон" required inputmode="tel" autocomplete="tel" pattern="[\\+]?[0-9\\s\\-\\(\\)]{10,}">
                                 <div id="formHint" class="text-error text-sm mb-4 min-h-[20px]"></div>
-                                <button type="submit" class="w-full py-4 md:py-5 primary-gradient text-on-primary-container font-space font-black uppercase tracking-[0.2em] text-sm md:text-lg active:scale-[0.98] transition-all">${content.contacts_form_submit || 'Отправить'}</button>
+                                <button type="button" id="submitOrderBtn" class="w-full py-4 md:py-5 primary-gradient text-on-primary-container font-space font-black uppercase tracking-[0.2em] text-sm md:text-lg active:scale-[0.98] transition-all">${content.contacts_form_submit || 'Отправить'}</button>
                                 <div class="flex justify-start mt-4">
                                     <button type="button" class="px-6 py-3 border border-outline text-on-surface-variant font-space font-bold uppercase tracking-[0.1em] text-sm hover:text-white hover:border-white transition-all" onclick="App.prevCalcStep(3)">Назад</button>
                                 </div>
@@ -299,6 +313,12 @@ const App = (function() {
 
         const form = document.getElementById('fenceCalculator');
         if (form) form.addEventListener('submit', handleFormSubmit);
+
+        // Netlify form submission handler
+        const submitBtn = document.getElementById('submitOrderBtn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', handleNetlifySubmit);
+        }
     }
 
     // =================== SERVICES ===================
@@ -817,7 +837,107 @@ const App = (function() {
 
     return {
         selectFence, toggleAddon, updateLength, updateHeight, updatePaint, toggleDelivery, nextCalcStep, prevCalcStep,
-        toggleMobileMenu, closeMobileMenu, openLoginModal, submitContactForm,
+        toggleMobileMenu, closeMobileMenu, openLoginModal, submitContactForm, handleNetlifySubmit,
         getContent: () => content
     };
+})();
+
+    /**
+     * Handle Netlify form submission
+     * Populates hidden fields with calculator data and submits to Netlify Forms
+     */
+    async function handleNetlifySubmit() {
+        const name = document.getElementById('calcName')?.value.trim();
+        const phone = document.getElementById('calcPhone')?.value.trim();
+        const hint = document.getElementById('formHint');
+        const phoneOk = /^\+?[0-9\s\-()]{10,}$/.test(phone);
+
+        if (!name || !phoneOk) { 
+            hint.textContent = 'Введите имя и корректный телефон.'; 
+            return; 
+        }
+        hint.textContent = '';
+
+        // Get current pricing from calculator
+        const pricing = getPricing();
+        
+        // Get the hidden Netlify form
+        const netlifyForm = document.getElementById('netlify-order-form');
+        if (!netlifyForm) {
+            showToast('Ошибка формы', 'error');
+            return;
+        }
+
+        // Populate hidden fields with calculation data
+        netlifyForm.querySelector('[name="total_price"]').value = pricing.total;
+        netlifyForm.querySelector('[name="order_details"]').value = JSON.stringify({
+            fence_type: calcState.fenceType,
+            fence_price: calcState.fencePrice,
+            length: calcState.length,
+            height: pricing.heightValue,
+            height_label: pricing.heightLabel,
+            paint_id: calcState.paintId,
+            paint_name: pricing.paintName,
+            addons: calcState.selectedAddons.map(a => a.name),
+            delivery: calcState.delivery,
+            discount_percent: pricing.discountPercent,
+            area: pricing.area
+        });
+        netlifyForm.querySelector('[name="fence_type"]').value = calcState.fenceType || '';
+        netlifyForm.querySelector('[name="fence_length"]').value = calcState.length;
+        netlifyForm.querySelector('[name="fence_height"]').value = pricing.heightValue;
+        netlifyForm.querySelector('[name="paint_option"]').value = pricing.paintName || 'Без покраски';
+        netlifyForm.querySelector('[name="delivery_included"]').value = calcState.delivery ? 'Да' : 'Нет';
+        netlifyForm.querySelector('[name="addons_list"]').value = calcState.selectedAddons.map(a => a.name).join(', ') || 'Нет';
+        netlifyForm.querySelector('[name="discount_applied"]').value = pricing.discount > 0 ? `${pricing.discountPercent}%` : 'Нет';
+        netlifyForm.querySelector('[name="calculation_area"]').value = pricing.area;
+
+        // Add customer name and phone as hidden fields for Netlify
+        let nameField = netlifyForm.querySelector('[name="customer_name"]');
+        if (!nameField) {
+            nameField = document.createElement('input');
+            nameField.type = 'hidden';
+            nameField.name = 'customer_name';
+            netlifyForm.appendChild(nameField);
+        }
+        nameField.value = name;
+
+        let phoneField = netlifyForm.querySelector('[name="customer_phone"]');
+        if (!phoneField) {
+            phoneField = document.createElement('input');
+            phoneField.type = 'hidden';
+            phoneField.name = 'customer_phone';
+            netlifyForm.appendChild(phoneField);
+        }
+        phoneField.value = phone;
+
+        try {
+            // Submit form data to Netlify
+            const formData = new FormData(netlifyForm);
+            const response = await fetch('/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData).toString()
+            });
+
+            if (response.ok) {
+                showToast(`Спасибо, ${name}! Ваша заявка отправлена.`, 'success');
+                // Reset form and calculator
+                document.getElementById('calcName').value = '';
+                document.getElementById('calcPhone').value = '';
+                setTimeout(() => {
+                    resetCalculator();
+                    // Optionally go back to step 1
+                    document.querySelectorAll('.calc-step').forEach(s => s.classList.add('hidden'));
+                    const step1 = document.getElementById('step-1');
+                    if (step1) step1.classList.remove('hidden');
+                }, 2000);
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        } catch (err) {
+            console.error('Form submission error:', err);
+            showToast('Ошибка отправки. Попробуйте еще раз.', 'error');
+        }
+    }
 })();
