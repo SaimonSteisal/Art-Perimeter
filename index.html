@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ru"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Арт Периметр — Профессиональный монтаж заборов</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#78dc77",
+                        "primary-container": "#4caf50",
+                        "on-secondary-fixed": "#002204",
+                        "background": "#131313",
+                        "error": "#ffb4ab",
+                        "on-background": "#e5e2e1",
+                        "secondary-fixed": "#c3eebb",
+                        "primary-fixed": "#94f990",
+                        "on-tertiary": "#650032",
+                        "on-tertiary-container": "#690034",
+                        "on-error": "#690005",
+                        "surface-container-highest": "#353535",
+                        "on-primary": "#00390a",
+                        "on-secondary-fixed-variant": "#2b4f2a",
+                        "surface": "#131313",
+                        "secondary": "#a8d1a1",
+                        "on-secondary-container": "#97c091",
+                        "inverse-on-surface": "#313030",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#005313",
+                        "tertiary-container": "#f26f9d",
+                        "tertiary": "#ffb1c7",
+                        "surface-container": "#20201f",
+                        "on-primary-container": "#003c0b",
+                        "surface-tint": "#78dc77",
+                        "surface-variant": "#353535",
+                        "secondary-container": "#2b4f2a",
+                        "tertiary-fixed-dim": "#ffb1c7",
+                        "inverse-surface": "#e5e2e1",
+                        "inverse-primary": "#006e1c",
+                        "tertiary-fixed": "#ffd9e2",
+                        "on-tertiary-fixed": "#3e001c",
+                        "on-surface": "#e5e2e1",
+                        "on-tertiary-fixed-variant": "#861948",
+                        "secondary-fixed-dim": "#a8d1a1",
+                        "on-primary-fixed": "#002204",
+                        "on-secondary": "#143815",
+                        "surface-dim": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
+                        "surface-bright": "#393939",
+                        "primary": "#78dc77",
+                        "outline": "#899484",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "on-surface-variant": "#becab9",
+                        "error-container": "#93000a",
+                        "outline-variant": "#3f4a3c"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "brand": ["Montserrat"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #131313; color: #e5e2e1; overflow-x: hidden; }
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .tonal-stacking-surface-low { background-color: #1c1b1b; }
+        .glass-nav { background: rgba(28, 27, 27, 0.6); backdrop-filter: blur(20px); }
+    </style>
+</head>
+<body class="selection:bg-primary-container selection:text-white">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-50 glass-nav shadow-2xl shadow-black/50">
+<div class="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto font-['Manrope'] text-sm tracking-tight relative">
+<div class="text-xl font-extrabold tracking-tighter text-white">Арт Периметр</div>
+<nav class="hidden md:flex gap-8" id="mobile-menu">
+<a class="text-zinc-400 hover:text-white transition-colors block md:inline py-2" href="#advantages">Преимущества</a>
+<a class="text-zinc-400 hover:text-white transition-colors block md:inline py-2" href="#services">Услуги</a>
+<a class="text-zinc-400 hover:text-white transition-colors block md:inline py-2" href="#portfolio">Работы</a>
+<a class="text-[#78dc77] font-bold border-b-2 border-transparent md:border-[#78dc77] pb-1 block md:inline py-2" href="#calculator">Калькулятор</a>
+</nav>
+<div class="flex items-center gap-4">
+<span class="text-[#4caf50] font-bold hidden sm:inline">+7 (999) 000-00-00</span>
+<button class="md:hidden text-white" id="menu-toggle"><span class="material-symbols-outlined">menu</span></button>
+</div>
+</div>
+<!-- Mobile Nav Overlay -->
+<div class="md:hidden hidden absolute top-full left-0 w-full bg-[#1c1b1b] shadow-xl border-b border-white/10" id="mobile-nav">
+<div class="flex flex-col px-6 py-4">
+<a class="text-zinc-400 hover:text-white transition-colors py-3 border-b border-white/5" href="#advantages">Преимущества</a>
+<a class="text-zinc-400 hover:text-white transition-colors py-3 border-b border-white/5" href="#services">Услуги</a>
+<a class="text-zinc-400 hover:text-white transition-colors py-3 border-b border-white/5" href="#portfolio">Работы</a>
+<a class="text-[#78dc77] font-bold py-3" href="#calculator">Калькулятор</a>
+<div class="pt-4 mt-2 border-t border-white/10">
+<span class="text-[#4caf50] font-bold">+7 (999) 000-00-00</span>
+</div>
+</div>
+</div>
+<div class="bg-gradient-to-b from-[#2a2a2a] to-transparent h-[1px]"></div>
+</header>
+<main>
+<!-- Hero Section -->
+<section class="relative min-h-[819px] flex items-center overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-30" data-alt="Modern dark metal fence architectural detail at dusk with dramatic lighting and professional finish" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsRRzk0_lBLuRvgjqvYTSdniwpNDCgdoiX4Uf-STMlXGsvkQaVoKqZ2vibjg9oNQ5PAHw3mQ-h0fppvEx1T-QV7Tu56WS2aTDIigArYjy7ybtRHfmE-je2yOOpaE5TN50oNzdLTZ_t5cTzp3IdeF1dzJ1KrcEEcaySQtmalFdBYPJ1HdJKP4PdjTNaHmndai4Sf74HQKeL8aBF1TiZXM8XN3cOe1WuZp-BvSUMrOJ5cwZH55NMZuoS9mKTq34Av7zEcFphceOR7hKX"/>
+<div class="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-7xl mx-auto px-6 py-24 w-full">
+<div class="max-w-3xl">
+<span class="inline-block px-3 py-1 bg-secondary-container text-primary text-[10px] font-bold tracking-widest uppercase mb-6 rounded-sm">Работаем в Москве и МО</span>
+<h1 class="text-4xl sm:text-5xl md:text-7xl font-headline font-extrabold tracking-tight text-white mb-8 leading-[1.1] break-words">
+                        Профессиональный монтаж <span class="text-primary">заборов</span> и металлоконструкций
+                    </h1>
+<p class="text-lg sm:text-xl text-zinc-400 mb-10 max-w-xl font-body">
+                        Создаем надежные ограждения с гарантией 5 лет. Собственное производство и штатные бригады монтажников.
+                    </p>
+<div class="flex flex-col sm:flex-row gap-4">
+<a class="bg-primary hover:bg-primary-container text-on-primary font-bold px-8 py-4 rounded-lg flex items-center justify-center gap-2 transition-all scale-95 active:scale-90 bg-gradient-to-b from-primary to-primary-container shadow-lg shadow-primary/20" href="#calculator">
+                            Рассчитать стоимость
+                            <span class="material-symbols-outlined">calculate</span>
+</a>
+<button class="border border-outline-variant hover:bg-white/5 text-white font-bold px-8 py-4 rounded-lg transition-all w-full sm:w-auto">
+                            Наши работы
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Advantages Bento -->
+<section class="py-24 px-6 max-w-7xl mx-auto w-full" id="advantages">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-high p-8 rounded-xl border border-outline-variant/15 hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-primary text-4xl mb-6">description</span>
+<h3 class="text-xl font-montserrat text-white mb-4">Официальный договор</h3>
+<p class="text-zinc-400 text-sm leading-relaxed">Фиксируем сроки и стоимость работ. Никаких скрытых платежей в процессе монтажа.</p>
+</div>
+<div class="bg-surface-container-high p-8 rounded-xl border border-outline-variant/15 hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-primary text-4xl mb-6">verified</span>
+<h3 class="text-xl font-montserrat text-white mb-4">Гарантия 5 лет</h3>
+<p class="text-zinc-400 text-sm leading-relaxed">Несем полную ответственность за качество материалов и надежность конструкции.</p>
+</div>
+<div class="bg-surface-container-high p-8 rounded-xl border border-outline-variant/15 hover:border-primary/50 transition-colors">
+<span class="material-symbols-outlined text-primary text-4xl mb-6">factory</span>
+<h3 class="text-xl font-montserrat text-white mb-4">Своё производство</h3>
+<p class="text-zinc-400 text-sm leading-relaxed">Изготавливаем элементы на собственном оборудовании, контролируя каждый этап.</p>
+</div>
+</div>
+</section>
+<!-- Services Section -->
+<section class="py-24 bg-surface-container-low w-full" id="services">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex justify-between items-end mb-16">
+<div>
+<h2 class="text-3xl sm:text-4xl font-headline font-bold text-white mb-4">Наши услуги</h2>
+<div class="h-1 w-24 bg-primary rounded-full"></div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Card 1 -->
+<div class="group bg-surface-container-high rounded-xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2">
+<div class="h-64 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="High-quality metal picket fence in a modern garden setting with sharp focus and clean lines" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3Vo9BYchjm6kbb-zBYpNrkprb7SC8jS5xhfcuAfq75evXO21R-NE_gXfVuAXprf-Ff1-ShMuxd7hXHH7Tkd4s3xGnPG9x2yPmWoIR-A-_GOgNq6F2VHbeO_Vljt3zx-Wbmf1j2EYOfC0h1-XiqTQZKi5OjCQuJ-HoV4yDmgg0IBAmpy93zaV7Y6MAmkAWN_fqCZmjaWhYBuj67JzCeMMp-6WP0V_AuzWH-XKytM1jALecRc_cTqlj1sj6Py8nu7fNGDaFSeueoaPO"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high to-transparent"></div>
+</div>
+<div class="p-8">
+<h3 class="text-2xl font-montserrat text-white mb-4">Заборы</h3>
+<p class="text-zinc-400 mb-6 text-sm">Профнастил, евроштакетник, 3D сетка, дерево и кирпич.</p>
+<button class="text-primary font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                                Подробнее <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group bg-surface-container-high rounded-xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2">
+<div class="h-64 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Automated sliding driveway gate with modern metal slats in a residential luxury setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCp6AMVQvlJYHCZQidFmMlRoV52u1xtAhWEiw_rxjHglt-Jex9k4hMfyTkvevr8q_AgP5DNwv4bPP-zFc58rFZhtd5dyY_x_hZJVi3RzAphWpDZHexyaWOhX-IlQzrP1KUhdWNNJjPAql5vP-U4DjJ3N4skb99NFxm_o06wPmu41G-tj3kPgCFxJP_OIvO5upqU_U9PRPpZeDXxsTgoNYsYdN6MGR0wbKfpjeFggn3p2SAtZc-YCyEQWp4YPeZ9RNscKhZwN8uZWu5o"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high to-transparent"></div>
+</div>
+<div class="p-8">
+<h3 class="text-2xl font-montserrat text-white mb-4">Ворота</h3>
+<p class="text-zinc-400 mb-6 text-sm">Откатные, распашные, с автоматикой и без. Монтаж под ключ.</p>
+<button class="text-primary font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                                Подробнее <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group bg-surface-container-high rounded-xl overflow-hidden shadow-2xl transition-transform hover:-translate-y-2">
+<div class="h-64 overflow-hidden relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="Sturdy metal carport structure with polycarbonate roof protecting vehicles, industrial aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYCrINWdKD2ELjKxoZEt-FBRha5jIqGk7WbtnfYARMBrCp7ui9WCgYLVRn3Uvo12fDTaVjCayVjgHo66GKpwG3NjAiVj9UuJtvMvKDOpiMgwi-r9jiPDYw-HN3y0nlyS2UahVLNrh023q533Od5DRPsbZwt0JC478dsEZtlncelS2o4Gf4HnvEbn2KzhpeKywAR8fRKxIW0Iz4Rq_LE96bffknuB9ssOgleoEWnREodKf8jOnrtHpdzJatanKvrayAtZRTQL0ztYiH"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-high to-transparent"></div>
+</div>
+<div class="p-8">
+<h3 class="text-2xl font-montserrat text-white mb-4">Навесы</h3>
+<p class="text-zinc-400 mb-6 text-sm">Для автомобилей, террас и входных групп из поликарбоната.</p>
+<button class="text-primary font-bold flex items-center gap-2 group-hover:gap-4 transition-all">
+                                Подробнее <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Calculator Section -->
+<section class="py-24 bg-background w-full overflow-hidden" id="calculator">
+<div class="max-w-4xl mx-auto px-6 w-full">
+<div class="text-center mb-12">
+<h2 class="text-3xl sm:text-4xl font-headline font-bold text-white mb-4">Калькулятор стоимости</h2>
+<p class="text-zinc-500">Рассчитайте предварительную стоимость вашего проекта в 3 шага</p>
+</div>
+<div class="bg-surface-container-high rounded-2xl p-1 shadow-2xl border border-outline-variant/10 w-full">
+<!-- Progress Bar -->
+<div class="flex items-center justify-between p-4 sm:p-6 bg-surface-container-highest/30 overflow-x-auto">
+<div class="flex flex-col items-center gap-2 flex-1 relative min-w-[80px]">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold z-10" id="progress-dot-1">1</div>
+<span class="text-[8px] sm:text-[10px] font-bold text-primary uppercase tracking-tighter text-center" id="progress-text-1">Тип и размер</span>
+<div class="absolute left-1/2 top-4 w-full h-[2px] bg-surface-container-highest" id="progress-line-1"></div>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 relative min-w-[80px]">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-zinc-400 flex items-center justify-center font-bold z-10 border border-outline-variant" id="progress-dot-2">2</div>
+<span class="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-tighter text-center" id="progress-text-2">Материалы</span>
+<div class="absolute left-1/2 top-4 w-full h-[2px] bg-surface-container-highest" id="progress-line-2"></div>
+</div>
+<div class="flex flex-col items-center gap-2 flex-1 min-w-[80px]">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-zinc-400 flex items-center justify-center font-bold z-10 border border-outline-variant" id="progress-dot-3">3</div>
+<span class="text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-tighter text-center" id="progress-text-3">Контакты</span>
+</div>
+</div>
+<div class="p-4 sm:p-8">
+<!-- Step 1 Content -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8" id="step-1">
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Выберите тип забора</label>
+<select class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="fence_type" name="fence_type">
+<option value="">-- Выберите --</option>
+<option value="профнастил">Забор из профнастила</option>
+<option value="евроштакетник">Евроштакетник</option>
+<option value="3d">3D забор (Gitter)</option>
+<option value="секционный">Секционный забор</option>
+</select>
+<p class="text-error text-xs hidden mt-1" id="fence_type_error"></p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Длина (м)</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="length" name="length" placeholder="50" type="number"/>
+<p class="text-error text-xs hidden mt-1" id="length_error"></p>
+</div>
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Высота (м)</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="height" name="height" placeholder="2" type="number"/>
+<p class="text-error text-xs hidden mt-1" id="height_error"></p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/5">
+<h4 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Ваша конфигурация</h4>
+<div class="space-y-3" id="config-summary">
+<div class="flex justify-between text-sm">
+<span class="text-zinc-500">Забор:</span>
+<span class="text-zinc-200">-</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-zinc-500">Площадь:</span>
+<span class="text-zinc-200">-</span>
+</div>
+<div class="pt-4 mt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row justify-between sm:items-end gap-2">
+<span class="text-zinc-500 text-xs">Предварительно:</span>
+<span class="text-2xl font-bold text-white">-</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Step 2 Content -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 hidden" id="step-2">
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Тип материала</label>
+<select class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="material_type" name="material_type">
+<option value="стандарт">Стандартный</option>
+<option value="премиум">Премиум</option>
+</select>
+</div>
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Покрытие</label>
+<select class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="finish_type" name="finish_type">
+<option value="одностороннее">Одностороннее</option>
+<option value="двухстороннее">Двухстороннее</option>
+</select>
+</div>
+<div class="flex items-center gap-3">
+<input class="w-5 h-5 bg-surface-container-lowest border-outline-variant rounded text-primary focus:ring-primary" id="installation" name="installation" type="checkbox"/>
+<label class="text-sm font-medium text-zinc-300" for="installation">С монтажом под ключ</label>
+</div>
+</div>
+</div>
+<!-- Step 3 Content -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 hidden" id="step-3">
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Ваше имя</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="user_name" name="user_name" placeholder="Иван" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-zinc-300 mb-2">Телефон</label>
+<input class="w-full bg-surface-container-lowest border-outline-variant rounded-lg text-white focus:border-primary focus:ring-primary h-12" id="user_phone" name="user_phone" placeholder="+7 (999) 000-00-00" type="tel"/>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/5" id="order_summary">
+<!-- Order summary will be injected here -->
+</div>
+</div>
+<div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+<button class="text-zinc-500 font-bold px-6 py-3 flex items-center justify-center gap-2 opacity-50 cursor-not-allowed w-full sm:w-auto" id="calc-prev">
+<span class="material-symbols-outlined">arrow_back</span> Назад
+                            </button>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-bold px-10 py-3 rounded-lg flex items-center justify-center gap-2 transition-all w-full sm:w-auto" id="calc-next">
+                                Далее <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Portfolio Section -->
+<section class="py-24 px-6 max-w-7xl mx-auto w-full" id="portfolio">
+<div class="mb-16 text-center">
+<h2 class="text-3xl sm:text-4xl font-headline font-bold text-white mb-4">Наши работы</h2>
+<p class="text-zinc-500">Реализованные проекты по всей Московской области</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+<div class="aspect-square rounded-xl overflow-hidden group relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Wide shot of a newly installed dark grey fence around a modern suburban house garden" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClJ7WeuMzHg9Z0dVjGPPk1rcKGlB0FFvDfe7FRRouhziRrjsET7sX4uHxyFK1Kj2RJWmxSYrQMMTENOqxXeEUNrblIKS3qyG_LPt6r4Lgje9_SQFtxJG2Rp5k9k5BM9nouIfa0qCJFFlHjo1BVIa0fTEt3XYtpdnWOd6ix9_7JI8UEodFvHtpmwfYtGx8iALEVoWP6dLEPXYwLws43nNZCAnp2H1V2rMqEtgz7F9LEOU4X_hpC-CWcbJZf7P95QC5-ENaiN3yMXYh5"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-4xl">zoom_in</span>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden group relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Modern wooden fence combined with dark metal supports in a contemporary landscape design" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcQ8L1jYiHLt5_khDeMq4wr1cJjTIvkdOSGKGEPk-zbqkOXSEn3nrbo2cq34mPVww9bxvI2ul0CRCfoNliZHmSOMrpBe0IBeUazlS1hvzTInHTTQkzniSBgxSig2EubJvd6aQj3otHATLF8q9ZcURIZhm2m1QmiVLazGCCFtRnLJhsO9uZNHo4HgM6mIkqpzYMmeovL7eNthhUnKJNwsKVijAzSyHkzO8LwsjVCxsp9Zby7AmgN_XNpmLR50aaM39vKHp3AZM0WsoL"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-4xl">zoom_in</span>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden group relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="A clean brick wall with wrought iron gate detailing, professional masonry and welding work" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDBNO5QhYKQpp4Czy5n1aGBPZupVrrtLC7-rkuUueIXlyv3jO2IwhGXizbBeMsA3IcBDtV3atuhchOtN-m_G864opt2P6j5mUwyIJvdS8UuIY01_cueXiyS4qKSAFZC3fbWYti5IIFfIPeOklxNoBtUtRTFmb329Jrexm7ABqV-4PaG7PTZ8hiU5jy5olQNb-teDVVmJOWvpVio5YON2qAKIFI0UiF2ithPjqoaZC_hItMTV2nJcELBLLcPMs3MYIYi2sQc9cu-U4s"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-4xl">zoom_in</span>
+</div>
+</div>
+<div class="aspect-square rounded-xl overflow-hidden group relative">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Close up of a precision welded metal gate hinge and latch with clean black powder coating" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTemP_dzgo2QABTqvLpLe1o4HJpT8Tbxtpzb90tml2cQwXQdEo5BsxafJrmwM-8d8i0NMApU_Dgh_6j6a8K1hicT5ROmZ-OsAQ0Em-4O7zE5f9R3jCXibnJsl5u8wdxqZczxjdWE2cqt0j_lkHk8ekQ4LYh8KhjBK_mVfJsPN31GH-EhcWRN62ps5IBUudfNY6h0xJNuiOmTI5TwOPUULWcGtiHX9Ymb2ayV0uiNXWlFevDU8ksbaPZsfM03pZAHi_-l_EkfZ4lg8n"/>
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-4xl">zoom_in</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 px-6 border-t border-zinc-800/50 bg-[#131313] mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center gap-8 max-w-7xl mx-auto font-['Manrope'] text-center md:text-left">
+<div class="text-lg font-bold text-zinc-200">Арт Периметр</div>
+<div class="flex flex-col sm:flex-row gap-4 sm:gap-6 text-xs text-zinc-500">
+<a class="hover:text-[#78dc77] transition-colors" href="#">Политика конфиденциальности</a>
+<a class="hover:text-[#78dc77] transition-colors" href="#">Условия использования</a>
+</div>
+<div class="text-xs text-zinc-500">
+                © 2024 Арт Периметр. Все права защищены.
+            </div>
+</div>
+</footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileNav = document.getElementById('mobile-nav');
+
+        menuToggle.addEventListener('click', function() {
+            mobileNav.classList.toggle('hidden');
+        });
+        
+        // Calculator Logic
+        class CalculatorEngine {
+            calculateTotal(data) {
+                const prices = {
+                    'профнастил': 1200,
+                    'евроштакетник': 1500,
+                    '3d': 1000,
+                    'секционный': 2000
+                };
+                
+                const type = data.fence_type || '';
+                const length = parseFloat(data.length) || 0;
+                const height = parseFloat(data.height) || 0;
+                const material = data.material_type || 'стандарт';
+                const finish = data.finish_type || 'одностороннее';
+                const installation = data.installation || false;
+
+                if (!type || length <= 0 || height <= 0) {
+                    return { total: 0, breakdown: [] };
+                }
+
+                let baseAreaPrice = (prices[type] || 0) * length * height;
+                
+                if (material === 'премиум') baseAreaPrice *= 1.4;
+                if (finish === 'двухстороннее') baseAreaPrice *= 1.2;
+                
+                const materialCost = Math.round(baseAreaPrice);
+                const installCost = installation ? Math.round(length * 800) : 0;
+                
+                return {
+                    total: materialCost + installCost,
+                    breakdown: [
+                        { label: 'Материалы', price: materialCost },
+                        ...(installCost > 0 ? [{ label: 'Монтажные работы', price: installCost }] : [])
+                    ]
+                };
+            }
+        }
+
+        let currentStep = 1;
+        const totalSteps = 3;
+        const engine = new CalculatorEngine();
+
+        function showStep(step) {
+            for (let i = 1; i <= totalSteps; i++) {
+                const el = document.getElementById(`step-${i}`);
+                if (el) {
+                    if (i === step) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                }
+            }
+            updateProgressBar(step);
+            updateButtons(step);
+            if (step === 3) {
+                updateSummary();
+            }
+        }
+
+        function updateProgressBar(step) {
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepDot = document.getElementById(`progress-dot-${i}`);
+                const stepText = document.getElementById(`progress-text-${i}`);
+                const line = document.getElementById(`progress-line-${i}`);
+                
+                if (i < step) {
+                    if(stepDot) stepDot.className = "w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold z-10";
+                    if(stepText) stepText.className = "text-[8px] sm:text-[10px] font-bold text-primary uppercase tracking-tighter text-center";
+                    if(line) line.className = "absolute left-1/2 top-4 w-full h-[2px] bg-primary";
+                } else if (i === step) {
+                    if(stepDot) stepDot.className = "w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold z-10";
+                    if(stepText) stepText.className = "text-[8px] sm:text-[10px] font-bold text-primary uppercase tracking-tighter text-center";
+                    if(line) line.className = "absolute left-1/2 top-4 w-full h-[2px] bg-surface-container-highest";
+                } else {
+                    if(stepDot) stepDot.className = "w-8 h-8 rounded-full bg-surface-container-highest text-zinc-400 flex items-center justify-center font-bold z-10 border border-outline-variant";
+                    if(stepText) stepText.className = "text-[8px] sm:text-[10px] font-bold text-zinc-500 uppercase tracking-tighter text-center";
+                    if(line) line.className = "absolute left-1/2 top-4 w-full h-[2px] bg-surface-container-highest";
+                }
+            }
+        }
+
+        function updateButtons(step) {
+            const prevBtn = document.getElementById('calc-prev');
+            const nextBtn = document.getElementById('calc-next');
+            
+            if (step === 1) {
+                prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                prevBtn.disabled = true;
+            } else {
+                prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                prevBtn.disabled = false;
+            }
+            
+            if (step === totalSteps) {
+                nextBtn.innerHTML = `Отправить заявку <span class="material-symbols-outlined">send</span>`;
+            } else {
+                nextBtn.innerHTML = `Далее <span class="material-symbols-outlined">arrow_forward</span>`;
+            }
+        }
+
+        function validateStep1() {
+            let isValid = true;
+            const length = document.getElementById('length').value;
+            const height = document.getElementById('height').value;
+            const fenceType = document.getElementById('fence_type').value;
+
+            if (!fenceType) {
+                document.getElementById('fence_type_error').textContent = "Выберите тип забора";
+                document.getElementById('fence_type_error').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('fence_type_error').classList.add('hidden');
+            }
+
+            if (!length || length <= 0) {
+                document.getElementById('length_error').textContent = "Введите корректную длину";
+                document.getElementById('length_error').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('length_error').classList.add('hidden');
+            }
+
+            if (!height || height <= 0) {
+                document.getElementById('height_error').textContent = "Введите корректную высоту";
+                document.getElementById('height_error').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('height_error').classList.add('hidden');
+            }
+            
+            return isValid;
+        }
+
+        function validateStep2() {
+            return true;
+        }
+
+        function goToNextStep() {
+            if (currentStep === 1 && !validateStep1()) return;
+            if (currentStep === 2 && !validateStep2()) return;
+            
+            if (currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+            } else {
+                alert("Заявка успешно отправлена!");
+            }
+        }
+
+        function goToPrevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+            }
+        }
+
+        function updateStep1Config() {
+            const fenceType = document.getElementById('fence_type').value;
+            const length = document.getElementById('length').value;
+            const height = document.getElementById('height').value;
+            
+            const fenceTypeSelect = document.getElementById('fence_type');
+            const fenceTypeName = fenceType ? fenceTypeSelect.options[fenceTypeSelect.selectedIndex].text : '-';
+            const area = (length && height && length > 0 && height > 0) ? (length * height) + ' м²' : '-';
+            
+            const data = { fence_type: fenceType, length: length, height: height };
+            const result = engine.calculateTotal(data);
+            const price = result.total > 0 ? result.total.toLocaleString() + ' ₽' : '-';
+
+            const configContainer = document.getElementById('config-summary');
+            if (configContainer) {
+                configContainer.innerHTML = `
+                    <div class="flex justify-between text-sm">
+                        <span class="text-zinc-500">Забор:</span>
+                        <span class="text-zinc-200">${fenceTypeName}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-zinc-500">Площадь:</span>
+                        <span class="text-zinc-200">${area}</span>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row justify-between sm:items-end gap-2">
+                        <span class="text-zinc-500 text-xs">Предварительно:</span>
+                        <span class="text-2xl font-bold text-white">${price}</span>
+                    </div>
+                `;
+            }
+        }
+
+        function updateSummary() {
+            const data = {
+                fence_type: document.getElementById('fence_type').value,
+                length: document.getElementById('length').value,
+                height: document.getElementById('height').value,
+                material_type: document.getElementById('material_type') ? document.getElementById('material_type').value : '',
+                finish_type: document.getElementById('finish_type') ? document.getElementById('finish_type').value : '',
+                installation: document.getElementById('installation') ? document.getElementById('installation').checked : false,
+            };
+            
+            const result = engine.calculateTotal(data);
+            
+            const summaryContainer = document.getElementById('order_summary');
+            if (summaryContainer) {
+                let html = `<h4 class="text-sm font-bold text-primary uppercase tracking-widest mb-4">Итоговая смета</h4><div class="space-y-3">`;
+                result.breakdown.forEach(item => {
+                    html += `<div class="flex justify-between text-sm"><span class="text-zinc-400">${item.label}:</span><span class="text-zinc-200">${item.price.toLocaleString()} ₽</span></div>`;
+                });
+                html += `<div class="pt-4 mt-4 border-t border-outline-variant/20 flex flex-col sm:flex-row justify-between sm:items-end gap-2"><span class="text-zinc-500 text-xs">Всего:</span><span class="text-2xl font-bold text-white">${result.total.toLocaleString()} ₽</span></div></div>`;
+                summaryContainer.innerHTML = html;
+            }
+        }
+
+        document.getElementById('calc-next').addEventListener('click', goToNextStep);
+        document.getElementById('calc-prev').addEventListener('click', goToPrevStep);
+        
+        document.getElementById('fence_type').addEventListener('change', updateStep1Config);
+        document.getElementById('length').addEventListener('input', updateStep1Config);
+        document.getElementById('height').addEventListener('input', updateStep1Config);
+
+        showStep(currentStep);
+    });
+</script>
+<script>
+    const steps = ['step-1', 'step-2', 'step-3'];
+    let currentStep = 0;
+
+    // Цены (примерные, подставь свои)
+    const prices = {
+        'профнастил': 2500,
+        'евроштакетник': 3200,
+        '3d': 1800,
+        'секционный': 4500
+    };
+
+    function updateStepUI() {
+        // Скрываем все шаги, показываем текущий
+        steps.forEach((stepId, index) => {
+            const stepEl = document.getElementById(stepId);
+            if (index === currentStep) {
+                stepEl.classList.remove('hidden');
+            } else {
+                stepEl.classList.add('hidden');
+            }
+
+            // Обновляем индикаторы прогресса (точки и текст)
+            const dot = document.getElementById(`progress-dot-${index + 1}`);
+            const text = document.getElementById(`progress-text-${index + 1}`);
+            const line = document.getElementById(`progress-line-${index + 1}`);
+
+            if (index <= currentStep) {
+                dot.classList.replace('bg-surface-container-highest', 'bg-primary');
+                dot.classList.replace('text-zinc-400', 'text-on-primary');
+                if (text) text.classList.replace('text-zinc-500', 'text-primary');
+            }
+            if (line && index < currentStep) {
+                line.classList.replace('bg-surface-container-highest', 'bg-primary');
+            }
+        });
+
+        // Кнопка назад (скрываем на 1 шаге)
+        const prevBtn = document.getElementById('prev-btn');
+        if (currentStep === 0) prevBtn.classList.add('invisible');
+        else prevBtn.classList.remove('invisible');
+
+        // Текст кнопки вперед
+        const nextBtn = document.getElementById('next-btn');
+        if (currentStep === steps.length - 1) {
+            nextBtn.innerHTML = 'Отправить заявку <span class="material-symbols-outlined">send</span>';
+        } else {
+            nextBtn.innerHTML = 'Далее <span class="material-symbols-outlined">arrow_forward</span>';
+        }
+
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const type = document.getElementById('fence_type').value;
+        const length = parseFloat(document.getElementById('length').value) || 0;
+        const height = parseFloat(document.getElementById('height').value) || 0;
+        
+        const pricePerM = prices[type] || 0;
+        const total = length * height * pricePerM;
+
+        const summaryBox = document.getElementById('config-summary');
+        summaryBox.innerHTML = `
+            <div class="flex justify-between text-sm"><span class="text-zinc-500">Забор:</span><span class="text-zinc-200">${type || '-'}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-zinc-500">Площадь:</span><span class="text-zinc-200">${(length * height).toFixed(1)} м²</span></div>
+            <div class="pt-4 mt-4 border-t border-outline-variant/20 flex flex-col justify-between gap-2">
+                <span class="text-zinc-500 text-xs">Предварительно:</span>
+                <span class="text-2xl font-bold text-white">${total.toLocaleString()} ₽</span>
+            </div>
+        `;
+    }
+
+    document.getElementById('next-btn').addEventListener('click', () => {
+        if (currentStep < steps.length - 1) {
+            // Простая валидация 1 шага
+            if (currentStep === 0 && !document.getElementById('fence_type').value) {
+                document.getElementById('fence_type_error').classList.remove('hidden');
+                document.getElementById('fence_type_error').innerText = 'Выберите тип забора';
+                return;
+            }
+            currentStep++;
+            updateStepUI();
+        } else {
+            // Тут срабатывает отправка формы (Netlify подхватит)
+            alert('Заявка отправлена!'); 
+        }
+    });
+
+    document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentStep > 0) {
+            currentStep--;
+            updateStepUI();
+        }
+    });
+
+    // Мобильное меню
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    menuToggle.addEventListener('click', () => {
+        mobileNav.classList.toggle('hidden');
+    });
+
+    // Инициализация
+    updateStepUI();
+</script>
+<script src="script.js"></script>
+
+</body></html>
