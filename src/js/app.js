@@ -344,9 +344,9 @@
   // ==================== INITIALIZATION ====================
   
   function init() {
-    initElements();
     renderFenceOptions();
     renderAddons();
+    initElements();
     attachEventListeners();
     loadSavedState();
     
